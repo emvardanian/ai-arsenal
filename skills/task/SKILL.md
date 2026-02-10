@@ -42,6 +42,39 @@ You don't do the work yourself — you delegate to specialized agents and manage
 | 9 | Documenter | `agents/documenter.md` | all `.task/*.md` (briefs only), doc files | `09-docs.md` + docs |
 | 10 | Committer | `agents/committer.md` | all `.task/*.md` (briefs only) | `10-commit.md` |
 
+## Progress Tracker
+
+Every time you present output to the user (after each agent completes), include a compact pipeline diagram showing the current position. Use this format:
+
+**For a full feature pipeline:**
+```
+[✅ Analyze] → [✅ Research] → [▶ Plan] → [ Implement] → [ Test] → [ Debug] → [ Review] → [ Refactor] → [ Document] → [ Commit]
+```
+
+**Legend:**
+- `✅` — completed
+- `▶` — current stage (active now)
+- ` ` — pending (empty, no icon)
+- `⏭` — skipped (determined by Analyst)
+- `🔄` — re-running (debug cycle or review fix)
+
+**For adaptive pipelines (e.g., hotfix):**
+```
+[✅ Analyze] → [⏭ Research] → [⏭ Plan] → [▶ Implement] → [ Test] → [ Debug] → [⏭ Review] → [⏭ Refactor] → [⏭ Document] → [ Commit]
+```
+
+**Multi-plan progress — show which plan we're on:**
+```
+[✅ Analyze] → [✅ Research] → [✅ Plan] → [▶ Implement 2/3] → [ Test] → [ Debug] → [ Review] → [ Refactor] → [ Document] → [ Commit]
+```
+
+**Debug cycle — show cycle count:**
+```
+[✅ Analyze] → [✅ Research] → [✅ Plan] → [✅ Implement 1/3] → [✅ Test ❌] → [▶ Debug 🔄1] → [ Implement] → [ Test] → [ Review] → [ Refactor] → [ Document] → [ Commit]
+```
+
+Place this diagram at the **top** of every response to the user, before any agent output or approval request. Keep it on 1-2 lines — it should be a quick visual glance, not a wall of text.
+
 ## Workspace
 
 All pipeline artifacts are stored in a `.task/` directory at the project root:
