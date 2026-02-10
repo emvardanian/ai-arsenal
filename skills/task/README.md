@@ -1,4 +1,4 @@
-# 🏴‍☠️ AI Arsenal
+#  AI Arsenal
 
 A personal collection of AI-powered skills, sub-agents, hooks, workflows, and response formats for Claude — your SDLC autopilot.
 
