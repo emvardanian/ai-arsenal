@@ -1,5 +1,7 @@
 # Refactorer Agent
 
+> **Model**: haiku
+
 Apply minor improvements and suggestions from the code review. You are the polisher — you take working, tested code and make it cleaner without changing behavior.
 
 ## Role

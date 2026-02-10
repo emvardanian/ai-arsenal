@@ -29,18 +29,26 @@ You don't do the work yourself — you delegate to specialized agents and manage
 
 ## Agent Reference
 
-| # | Agent | File | Reads | Writes |
-|---|-------|------|-------|--------|
-| 1 | Analyst | `agents/analyst.md` | user request | `01-analysis.md` |
-| 2 | Researcher | `agents/researcher.md` | `01-analysis.md` (full) | `02-research.md` |
-| 3 | Planner | `agents/planner.md` | `02-research.md` (full), `01-analysis.md` (brief) | `03-plan.md` |
-| 4 | Implementer | `agents/implementer.md` | `03-plan.md` (current plan only), `02-research.md` (brief) | `04-implementation-{N}.md` + code |
-| 5 | Tester | `agents/tester.md` | `04-implementation-{N}.md` (full), `01-analysis.md` (criteria), `03-plan.md` (verification) | `05-tests-{N}-{cycle}.md` + tests |
-| 6 | Debugger | `agents/debugger.md` | `05-tests-{N}-{cycle}.md` (full), source files (targeted) | `06-debug-{N}-{cycle}.md` |
-| 7 | Reviewer | `agents/reviewer.md` | `04-implementation-*.md` (summaries), source files, `01-analysis.md` (criteria), `03-plan.md` (brief) | `07-review.md` |
-| 8 | Refactorer | `agents/refactorer.md` | `07-review.md` (minor + suggestions only), source files | `08-refactor.md` + code |
-| 9 | Documenter | `agents/documenter.md` | all `.task/*.md` (briefs only), doc files | `09-docs.md` + docs |
-| 10 | Committer | `agents/committer.md` | all `.task/*.md` (briefs only) | `10-commit.md` |
+| # | Agent | File | Model | Reads | Writes |
+|---|-------|------|-------|-------|--------|
+| 1 | Analyst | `agents/analyst.md` | **opus** | user request | `01-analysis.md` |
+| 2 | Researcher | `agents/researcher.md` | sonnet | `01-analysis.md` (full) | `02-research.md` |
+| 3 | Planner | `agents/planner.md` | **opus** | `02-research.md` (full), `01-analysis.md` (brief) | `03-plan.md` |
+| 4 | Implementer | `agents/implementer.md` | sonnet | `03-plan.md` (current plan only), `02-research.md` (brief) | `04-implementation-{N}.md` + code |
+| 5 | Tester | `agents/tester.md` | sonnet | `04-implementation-{N}.md` (full), `01-analysis.md` (criteria), `03-plan.md` (verification) | `05-tests-{N}-{cycle}.md` + tests |
+| 6 | Debugger | `agents/debugger.md` | sonnet | `05-tests-{N}-{cycle}.md` (full), source files (targeted) | `06-debug-{N}-{cycle}.md` |
+| 7 | Reviewer | `agents/reviewer.md` | sonnet | `04-implementation-*.md` (summaries), source files, `01-analysis.md` (criteria), `03-plan.md` (brief) | `07-review.md` |
+| 8 | Refactorer | `agents/refactorer.md` | haiku | `07-review.md` (minor + suggestions only), source files | `08-refactor.md` + code |
+| 9 | Documenter | `agents/documenter.md` | haiku | all `.task/*.md` (briefs only), doc files | `09-docs.md` + docs |
+| 10 | Committer | `agents/committer.md` | haiku | all `.task/*.md` (briefs only) | `10-commit.md` |
+
+### Model Strategy
+
+- **Opus** — complex reasoning: task understanding, architectural decisions
+- **Sonnet** — execution: code writing, testing, debugging, reviewing
+- **Haiku** — mechanical tasks: applying known fixes, generating docs, formatting commits
+
+When spawning subagents, use the recommended model if the runtime supports model selection. Otherwise, fall back to the current session model.
 
 ## Progress Tracker
 
