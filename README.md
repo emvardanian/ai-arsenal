@@ -300,7 +300,3 @@ rm -rf .task/
 **Why plugin delegation?** Instead of embedding 60+ line security checklists in the Reviewer, we delegate to `security-scanning` which is purpose-built and community-maintained. The pipeline keeps a fallback for when plugins aren't installed.
 
 **Why adaptive pipeline?** A simple hotfix doesn't need documentation and review stages. The Analyst determines which stages run based on task type and scope, saving time and tokens.
-
-## License
-
-MIT
