@@ -92,11 +92,13 @@ Based on task type and scope, decide which of the 8 stages are needed:
 | Task Type | Default Pipeline |
 |-----------|-----------------|
 | **feature** | Analyze → Plan → Implement → Test → Review → Refactor → Document → Commit |
+| **feature + design** | Analyze → Plan → **Design** → Implement → Test → Review → Refactor → Document → Commit |
 | **bugfix** | Analyze → Plan → Implement → Test → Commit |
 | **refactor** | Analyze → Plan → Refactor → Review → Test → Commit |
 | **hotfix** | Analyze → Implement → Test → Commit |
 
 These are defaults — adjust based on context:
+- Add **Design** when user provides a screenshot, mockup, or design reference (set `has_design_input: true`)
 - Skip **Document** if change is trivial and internal
 - Skip **Refactor** if code is already clean and change is isolated
 - Add **Review** to bugfix if the bug was in a critical path
@@ -146,6 +148,7 @@ Write a markdown document to `.task/01-analysis.md` with the following structure
 - **Type**: feature | bugfix | refactor | hotfix
 - **Scope**: small | medium | large | critical
 - **Priority**: low | medium | high | urgent
+- **Has design input**: true | false
 
 ## Acceptance Criteria
 1. [Criterion 1 — specific and testable]

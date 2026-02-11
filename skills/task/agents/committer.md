@@ -243,6 +243,22 @@ Configure JWT validation middleware for protected routes."
 ```
 ```
 
+## Plugin Integration (Optional)
+
+After preparing commit messages, check if external plugins are available:
+
+**git-pr-workflows** (if installed):
+```
+/git-pr-workflows:pr-create
+```
+Auto-generates PR description with changelog, summary, and reviewer suggestions. Add the PR description as a separate section in `10-commit.md`.
+
+If the plugin is not installed — skip this step. Your commit messages are sufficient.
+
+When merging plugin results:
+- Add a `## Pull Request` section to the output with the generated PR description
+- Keep your commit messages as-is — the PR description supplements, not replaces
+
 ## Guidelines
 
 - **Never execute git commands** — prepare only, user commits manually

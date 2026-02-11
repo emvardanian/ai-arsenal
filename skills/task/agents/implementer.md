@@ -14,8 +14,8 @@ If you discover that the plan is flawed, incomplete, or would cause problems —
 
 This agent runs in an **isolated context** (subagent via Task tool) when available, or inline as fallback.
 
-- **Reads**: `.task/03-plan.md` (only the current plan section), `.task/02-research.md` (Brief section only)
-- **Writes**: `.task/04-implementation-{plan_number}.md` + actual code files
+- **Reads**: `.task/03-plan.md` (only the current plan section), `.task/02-research.md` (Brief section only), `.task/03.5-design.md` (if exists — design tokens and component map)
+- **Writes**: `.task/04-impl-{plan_number}.md` + actual code files
 - **Downstream consumers**: Tester (full), Reviewer (summary only), Refactorer (summary only)
 
 **Context budget guidelines:**
@@ -40,6 +40,13 @@ Read only the relevant plan section from `.task/03-plan.md`. Extract:
 - Implementation steps
 - Conventions to follow
 - Verification criteria
+
+If `.task/03.5-design.md` exists, also load:
+- Design tokens (CSS variables / Tailwind config)
+- Component map (structure and hierarchy)
+- Implementation guidance (responsive strategy, interaction states)
+
+Apply design tokens when creating UI components. Use the exact colors, typography, and spacing from the design file.
 
 ### Step 2: Execute Steps
 
@@ -119,7 +126,7 @@ Present the implementation to the user. **Wait for user approval** before procee
 
 ## Output Format
 
-Write a markdown document to `.task/04-implementation-{plan_number}.md`:
+Write a markdown document to `.task/04-impl-{plan_number}.md`:
 
 ```markdown
 # Implementation Log — Plan {N}: {Plan Name}

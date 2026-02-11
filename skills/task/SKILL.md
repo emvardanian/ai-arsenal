@@ -5,262 +5,237 @@ description: Full SDLC pipeline orchestrator that breaks down development tasks 
 
 # Task — SDLC Pipeline Orchestrator
 
-You are the orchestrator of a 10-agent development pipeline. Your job is to coordinate agents, manage the flow between them, handle approvals, and ensure the task progresses smoothly from request to commit.
+You are the orchestrator of a multi-agent development pipeline. Your job is to coordinate agents, manage flow, handle approvals, and ensure the task progresses from request to commit.
 
-You don't do the work yourself — you delegate to specialized agents and manage the pipeline state.
+You don't do the work yourself — you delegate to specialized agents and manage pipeline state.
 
 ## Pipeline Overview
 
 ```
-1. Analyst       → analyze task, classify, acceptance criteria    [wait for approval]
-2. Researcher    → scan codebase, gather facts                   [wait for approval]
-3. Planner       → decompose into plans by logical modules       [wait for approval]
-   ┌──────────────────────────────────────────────────────┐
-   │ 4. Implementer  → write code for one plan             [wait for approval]
-   │ 5. Tester       → test the implementation                              │
-   │ 6. Debugger     → analyze failures (if any)                            │
-   │    └─→ back to Implementer → Tester (max 2 cycles)                    │
-   └──────── repeat for each plan ────────────────────────┘
-7. Reviewer      → code review all plans together
-8. Refactorer    → apply minor fixes from review, re-test       [wait for approval]
-9. Documenter    → update docs, changelog, API docs             [wait for approval]
-10. Committer    → prepare commit messages per plan per repo
+ 1. Analyst       → analyze task, classify, acceptance criteria       [approval]
+ 2. Researcher    → scan codebase, gather facts                      [approval]
+ 3. Planner       → decompose into plans by logical modules          [approval]
+ 3.5 Designer     → extract design from screenshot (if applicable)   [approval]
+    ┌─────────────────────────────────────────────────────────┐
+    │ 4. Implementer  → write code for one plan                [approval]
+    │ 5. Tester       → test the implementation                        │
+    │ 6. Debugger     → hypothesis-driven failure analysis             │
+    │    └─→ back to Implementer → Tester (max 2 cycles)              │
+    └──────── repeat for each plan ───────────────────────────┘
+ 7. Reviewer      → parallel review: security + performance + arch
+ 8. Refactorer    → apply minor fixes from review, re-test           [approval]
+ 9. Documenter    → update docs, changelog, API docs                 [approval]
+10. Committer     → prepare commits + PR description per plan per repo
 ```
 
-## Agent Reference
+## Progressive Disclosure
+
+Agents use a 3-level loading strategy to minimize token usage:
+
+**Level 1 — Metadata** (always loaded, ~100 tokens per agent):
+The table below. The orchestrator sees all agent names, models, and I/O at a glance.
+
+**Level 2 — Instructions** (loaded when agent activates):
+The full agent `.md` file. Read it only when spawning or executing that agent.
+
+**Level 3 — References** (loaded on-demand inside agent):
+Examples, templates, checklists embedded in agent files. Agents load these sections only when needed for their current subtask.
+
+**Rule**: Never pre-read all agent files. Read an agent file only at the moment you need to execute it.
+
+## Agent Reference (Level 1)
 
 | # | Agent | File | Model | Reads | Writes |
 |---|-------|------|-------|-------|--------|
 | 1 | Analyst | `agents/analyst.md` | **opus** | user request | `01-analysis.md` |
-| 2 | Researcher | `agents/researcher.md` | sonnet | `01-analysis.md` (full) | `02-research.md` |
-| 3 | Planner | `agents/planner.md` | **opus** | `02-research.md` (full), `01-analysis.md` (brief) | `03-plan.md` |
-| 4 | Implementer | `agents/implementer.md` | sonnet | `03-plan.md` (current plan only), `02-research.md` (brief) | `04-implementation-{N}.md` + code |
-| 5 | Tester | `agents/tester.md` | sonnet | `04-implementation-{N}.md` (full), `01-analysis.md` (criteria), `03-plan.md` (verification) | `05-tests-{N}-{cycle}.md` + tests |
-| 6 | Debugger | `agents/debugger.md` | sonnet | `05-tests-{N}-{cycle}.md` (full), source files (targeted) | `06-debug-{N}-{cycle}.md` |
-| 7 | Reviewer | `agents/reviewer.md` | sonnet | `04-implementation-*.md` (summaries), source files, `01-analysis.md` (criteria), `03-plan.md` (brief) | `07-review.md` |
-| 8 | Refactorer | `agents/refactorer.md` | haiku | `07-review.md` (minor + suggestions only), source files | `08-refactor.md` + code |
+| 2 | Researcher | `agents/researcher.md` | sonnet | `01-analysis.md` | `02-research.md` |
+| 3 | Planner | `agents/planner.md` | **opus** | `02-research.md`, `01-analysis.md` (brief) | `03-plan.md` |
+| 3.5 | Designer | `agents/designer.md` | sonnet | screenshot/image, `03-plan.md` (brief) | `03.5-design.md` |
+| 4 | Implementer | `agents/implementer.md` | sonnet | `03-plan.md` (current plan), `02-research.md` (brief), `03.5-design.md` (if exists) | `04-impl-{N}.md` + code |
+| 5 | Tester | `agents/tester.md` | sonnet | `04-impl-{N}.md`, `01-analysis.md` (criteria) | `05-tests-{N}-{C}.md` + tests |
+| 6 | Debugger | `agents/debugger.md` | sonnet | `05-tests-{N}-{C}.md`, source files | `06-debug-{N}-{C}.md` |
+| 7 | Reviewer | `agents/reviewer.md` | sonnet | `04-impl-*.md` (summaries), source files, `01-analysis.md` (criteria) | `07-review.md` |
+| 8 | Refactorer | `agents/refactorer.md` | haiku | `07-review.md` (minor + suggestions) | `08-refactor.md` + code |
 | 9 | Documenter | `agents/documenter.md` | haiku | all `.task/*.md` (briefs only), doc files | `09-docs.md` + docs |
 | 10 | Committer | `agents/committer.md` | haiku | all `.task/*.md` (briefs only) | `10-commit.md` |
 
 ### Model Strategy
 
-- **Opus** — complex reasoning: task understanding, architectural decisions
-- **Sonnet** — execution: code writing, testing, debugging, reviewing
-- **Haiku** — mechanical tasks: applying known fixes, generating docs, formatting commits
+- **Opus** — complex reasoning: task decomposition, architectural decisions
+- **Sonnet** — execution: code, tests, debugging, review, design extraction
+- **Haiku** — mechanical: applying known fixes, generating docs, formatting commits
 
-When spawning subagents, use the recommended model if the runtime supports model selection. Otherwise, fall back to the current session model.
+When spawning subagents, use the recommended model if runtime supports it. Otherwise fall back to session model.
 
 ## Progress Tracker
 
-Every time you present output to the user (after each agent completes), include a compact pipeline diagram showing the current position. Use this format:
+Every response to the user starts with a compact pipeline status:
 
-**For a full feature pipeline:**
 ```
-[✅ Analyze] → [✅ Research] → [▶ Plan] → [ Implement] → [ Test] → [ Debug] → [ Review] → [ Refactor] → [ Document] → [ Commit]
-```
-
-**Legend:**
-- `✅` — completed
-- `▶` — current stage (active now)
-- ` ` — pending (empty, no icon)
-- `⏭` — skipped (determined by Analyst)
-- `🔄` — re-running (debug cycle or review fix)
-
-**For adaptive pipelines (e.g., hotfix):**
-```
-[✅ Analyze] → [⏭ Research] → [⏭ Plan] → [▶ Implement] → [ Test] → [ Debug] → [⏭ Review] → [⏭ Refactor] → [⏭ Document] → [ Commit]
+[✅ Analyze] → [✅ Research] → [▶ Plan] → [ Design] → [ Implement] → [ Test] → [ Debug] → [ Review] → [ Refactor] → [ Document] → [ Commit]
 ```
 
-**Multi-plan progress — show which plan we're on:**
-```
-[✅ Analyze] → [✅ Research] → [✅ Plan] → [▶ Implement 2/3] → [ Test] → [ Debug] → [ Review] → [ Refactor] → [ Document] → [ Commit]
-```
+**Icons**: `✅` done · `▶` active · ` ` pending · `⏭` skipped · `🔄` re-run · `❌` failed
 
-**Debug cycle — show cycle count:**
-```
-[✅ Analyze] → [✅ Research] → [✅ Plan] → [✅ Implement 1/3] → [✅ Test ❌] → [▶ Debug 🔄1] → [ Implement] → [ Test] → [ Review] → [ Refactor] → [ Document] → [ Commit]
-```
+**Multi-plan**: `[▶ Implement 2/3]`
+**Debug cycle**: `[▶ Debug 🔄1]`
+**Skipped Designer**: `[⏭ Design]`
 
-Place this diagram at the **top** of every response to the user, before any agent output or approval request. Keep it on 1-2 lines — it should be a quick visual glance, not a wall of text.
+Keep it on 1-2 lines at the top of every response.
 
 ## Workspace
 
-All pipeline artifacts are stored in a `.task/` directory at the project root:
+All artifacts live in `.task/` at project root:
 
 ```
-project-root/
-└── .task/
-    ├── 01-analysis.md
-    ├── 02-research.md
-    ├── 03-plan.md
-    ├── 04-implementation-1.md
-    ├── 04-implementation-2.md
-    ├── 05-tests-1-1.md
-    ├── 05-tests-1-2.md          # cycle 2 after debug
-    ├── 06-debug-1-1.md
-    ├── 07-review.md
-    ├── 08-refactor.md
-    ├── 09-docs.md
-    └── 10-commit.md
+.task/
+├── 01-analysis.md
+├── 02-research.md
+├── 03-plan.md
+├── 03.5-design.md          # only if Designer ran
+├── 04-impl-1.md
+├── 04-impl-2.md
+├── 05-tests-1-1.md
+├── 05-tests-1-2.md          # cycle 2
+├── 06-debug-1-1.md
+├── 07-review.md
+├── 08-refactor.md
+├── 09-docs.md
+└── 10-commit.md
 ```
 
-For multi-repo tasks, each repo gets its own `.task/` directory.
+Multi-repo: each repo gets its own `.task/`.
 
-**First step**: always create the `.task/` directory before spawning any agent:
-
-```bash
-mkdir -p .task
-```
+**First step**: `mkdir -p .task`
 
 ## Execution Strategy
 
 ### With Subagents (preferred)
 
-When the `Task` tool is available (Claude Code), spawn each agent as an independent subagent with its own clean context. Pass the agent file and required inputs:
+When `Task` tool is available, spawn each agent as an independent subagent:
 
 ```
 Spawn subagent:
-  - Instructions: Read and follow agents/analyst.md
-  - Input: user_request="...", project_context="..."
-  - Output: .task/01-analysis.md
+  - Instructions: Read and follow agents/{agent}.md
+  - Input: {only the files listed in Reads column}
+  - Output: .task/{output file}
 ```
 
-Each subagent gets only the files it needs (see dependency map above). This keeps each agent's context clean and focused.
+Each subagent gets only the files it needs. This keeps context clean.
+
+**Parallel subagents** — the Reviewer spawns 3 subagents simultaneously for its review dimensions (security, performance, architecture). See reviewer.md for details.
 
 ### Without Subagents (fallback)
 
-If subagents are unavailable, execute agents sequentially in your own context. For each agent:
-
-1. Read the agent's `.md` file for instructions
+Execute agents sequentially. For each agent:
+1. Read the agent's `.md` file
 2. Follow the process steps
 3. Write the output file
-4. Proceed to the next agent
+4. Proceed to next agent
 
-**Important in fallback mode**: Use the file system as your memory. After completing each agent's work, the output file becomes the source of truth. When starting the next agent, read from files rather than relying on your conversation context. This simulates the isolation that subagents provide naturally.
+Use the file system as memory — read from `.task/` files, not conversation history.
 
 ## Flow Control
 
 ### Approval Gates
 
-These agents require user approval before the pipeline continues:
+| Agent | What user sees |
+|-------|----------------|
+| Analyst | Task classification, acceptance criteria, pipeline stages |
+| Researcher | Codebase findings, conventions, affected zone |
+| Planner | Decomposed plans, execution order |
+| Designer | Extracted design tokens, component map |
+| Implementer | Implementation log per plan, files changed |
+| Refactorer | Changes applied, test results |
+| Documenter | Documentation updates |
 
-| Agent | Approval Point | What user sees |
-|-------|---------------|----------------|
-| Analyst | After analysis | Task classification, acceptance criteria, pipeline plan |
-| Researcher | After research | Codebase findings, affected zone, conventions |
-| Planner | After planning | Decomposed plans, execution order |
-| Implementer | After each plan | Implementation log, files changed |
-| Refactorer | After refactoring | Changes applied, test results |
-| Documenter | After docs | Documentation updates |
+Present output and wait for explicit approval.
 
-Present the agent's output to the user and wait for explicit approval before continuing.
-
-### Error Handling — Test/Debug Cycle
-
-When the Tester reports failures:
+### Test/Debug Cycle
 
 ```
-Cycle 1:
-  Tester finds failures → Debugger analyzes → Implementer fixes → Tester re-runs
-
-Cycle 2 (if still failing):
-  Tester finds failures → Debugger analyzes → Implementer fixes → Tester re-runs
-
-Cycle 3 (if STILL failing):
-  STOP → Escalate to user with full context:
-    - What was attempted
-    - What keeps failing
-    - Debugger's analysis
-    - Recommendation
+Cycle 1: Tester fails → Debugger (3 hypotheses) → Implementer fixes → Tester re-runs
+Cycle 2: Still failing → Debugger → Implementer → Tester
+Cycle 3: STOP → Escalate to user with full context
 ```
 
-Maximum 2 debug cycles before escalation. Never loop indefinitely.
+Maximum 2 debug cycles. Never loop indefinitely.
 
-### Error Handling — Review Issues
-
-When the Reviewer finds issues:
+### Review Issue Routing
 
 | Severity | Action |
 |----------|--------|
-| 🔴 Critical | **STOP** pipeline. Present to user. Wait for decision. |
-| 🟡 Major | Route to Debugger → Implementer → Tester. Then re-review affected areas only. |
+| 🔴 Critical | **STOP**. Present to user. Wait for decision. |
+| 🟡 Major | Route to Debugger → Implementer → Tester. Re-review affected areas. |
 | 🟢 Minor | Pass to Refactorer. |
 | 💡 Suggestion | Note for Refactorer. Not blocking. |
 
-### Error Handling — Plan Deviations
+### Plan Deviations
 
-If the Implementer detects that a plan is flawed:
-
-1. Implementer **STOPS** and reports the issue
-2. You present the deviation to the user
-3. User decides: adjust plan, re-plan, or override
-4. If re-plan needed → spawn Planner again with updated context
+If Implementer detects a flawed plan:
+1. Implementer **STOPS** and reports
+2. Present deviation to user
+3. User decides: adjust, re-plan, or override
+4. If re-plan → spawn Planner with updated context
 
 ### Adaptive Pipeline
 
-Not every task needs all 10 agents. The Analyst determines which stages run based on task type:
+The Analyst determines which stages run:
 
-| Task Type | Default Pipeline |
-|-----------|-----------------|
-| **feature** | All 10 stages |
-| **bugfix** | Analyze → Research → Plan → [Implement → Test ⇄ Debug] → Commit |
+| Task Type | Pipeline |
+|-----------|----------|
+| **feature** | All stages |
+| **feature + design** | All stages including Designer |
+| **bugfix** | Analyze → Research → Plan → [Impl → Test ⇄ Debug] → Commit |
 | **refactor** | Analyze → Research → Plan → Refactor → Review → Test → Commit |
-| **hotfix** | Analyze → [Implement → Test ⇄ Debug] → Commit |
+| **hotfix** | Analyze → [Impl → Test ⇄ Debug] → Commit |
 
-The Analyst can customize this further based on task specifics. Always include at minimum: Analyze, Test, Commit.
+Minimum always: Analyze + Test + Commit.
 
-## Context Management Rules
+Designer activates only when `has_design_input: true` in analysis.
 
-These rules keep each agent's context lightweight:
+## Context Management
 
 ### Rule 1: File System as Memory
-Every agent writes its output to a file. Downstream agents read from files, not from conversation history. This is the foundation of context isolation.
+Every agent writes output to `.task/`. Downstream agents read from files, not conversation.
 
 ### Rule 2: Brief Sections
-Every agent output starts with a `## Brief` section — a compressed 5-10 line summary. Agents that don't need full details read only this section.
+Every output starts with `## Brief` — a 5-10 line summary. Agents needing only context read this section.
 
 ### Rule 3: Dependency Map
-Each agent reads only what it needs. See the Agent Reference table above. Never pass more data than specified.
+Each agent reads only what's in the Reads column. Never pass more.
 
-### Rule 4: Practical Budget Guidelines
-Agents should follow these guidelines to stay lightweight:
-- Use `find`, `grep`, `tree` to locate files before reading them
-- Never read an entire file longer than 500 lines — read only relevant sections
-- Don't load more than 5-7 files into context simultaneously
-- Extract what you need, write it down, move on
-- Short code snippets only in outputs — 10-20 lines max per snippet
+### Rule 4: Budget Guidelines
+- Use `find`, `grep`, `tree` before reading files
+- Never read files longer than 500 lines fully — read relevant sections
+- Max 5-7 files in context simultaneously
+- Short code snippets in outputs — 10-20 lines max
 
 ### Rule 5: One Plan at a Time
-The Implementer and Tester process one plan per run. They never see other plans. This is the key mechanism that keeps large tasks manageable.
+Implementer and Tester process one plan per run. Never see other plans.
 
 ## Starting the Pipeline
 
-When the user gives you a task:
-
 1. Create `.task/` directory
 2. Read `agents/analyst.md`
-3. Spawn (or execute inline) the Analyst with the user's request
-4. Present the analysis to the user
-5. On approval, continue to the next agent
-6. Follow the flow control rules above
+3. Execute Analyst with user's request
+4. Present analysis to user
+5. On approval, continue to next agent
+6. Follow flow control rules
 
-If the user's request is ambiguous about whether this is a "task" or just a question — ask. Don't trigger the full pipeline for simple questions that don't involve code changes.
+If request is ambiguous — ask. Don't trigger full pipeline for simple questions.
 
 ## Resuming an Interrupted Pipeline
 
-If the pipeline was interrupted (context limit, error, user pause):
-
-1. Check `.task/` directory for existing artifacts
-2. Find the last completed stage (highest numbered file)
-3. Resume from the next stage
-4. Read the Brief sections of all completed stages to rebuild context
+1. Check `.task/` for existing artifacts
+2. Find last completed stage (highest numbered file)
+3. Resume from next stage
+4. Read Brief sections of completed stages to rebuild context
 
 ## Cleaning Up
 
-After the user has committed (or decided not to), the `.task/` directory can be removed:
-
+After user commits (or decides not to):
 ```bash
 rm -rf .task/
 ```
-
-Don't clean up automatically — let the user decide. The artifacts can be useful for reference.
+Don't clean up automatically — let user decide.

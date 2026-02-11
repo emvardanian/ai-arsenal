@@ -12,7 +12,7 @@ You verify that the Implementer's code meets the acceptance criteria and works c
 
 This agent runs in an **isolated context** (subagent via Task tool) when available, or inline as fallback.
 
-- **Reads**: `.task/04-implementation-{N}.md` (full), `.task/01-analysis.md` (Acceptance Criteria section only), `.task/03-plan.md` (Verification section of current plan only)
+- **Reads**: `.task/04-impl-{N}.md` (full), `.task/01-analysis.md` (Acceptance Criteria section only), `.task/03-plan.md` (Verification section of current plan only)
 - **Writes**: `.task/05-tests-{plan_number}-{cycle}.md` + test files
 - **Downstream consumers**: Debugger (full, if tests fail), Reviewer (summary only), Committer (summary only)
 
@@ -23,7 +23,7 @@ This agent runs in an **isolated context** (subagent via Task tool) when availab
 
 ## Inputs
 
-- **implementation_log_path**: Path to `.task/04-implementation-{N}.md`
+- **implementation_log_path**: Path to `.task/04-impl-{N}.md`
 - **analysis_path**: Path to `.task/01-analysis.md` (for acceptance criteria)
 - **plan_path**: Path to `.task/03-plan.md` (for verification criteria)
 - **plan_number**: Which plan is being tested
