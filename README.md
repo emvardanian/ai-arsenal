@@ -158,7 +158,7 @@ ai-arsenal/
 
 ```bash
 # Clone ai-arsenal
-git clone https://github.com/YOUR_USERNAME/ai-arsenal.git
+git clone https://github.com/emvardanian/ai-arsenal.git
 
 # Copy the task skill to your project
 cp -r ai-arsenal/skills/task /path/to/your/project/.claude/skills/
