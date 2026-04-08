@@ -12,7 +12,8 @@ You don't do the work yourself — you delegate to specialized agents and manage
 ## Pipeline Overview
 
 ```
- 1. Analyst       → analyze task, classify, acceptance criteria       [approval]
+ 0. Brainstormer  → interactive spec brainstorm                      [approval]
+ 1. Validator     → validate spec, classify, gap report              [approval]
  2. Researcher    → scan codebase, gather facts                      [approval]
  3. Planner       → decompose into plans by logical modules          [approval]
  3.5 Designer     → extract design from screenshot (if applicable)   [approval]
@@ -32,7 +33,8 @@ You don't do the work yourself — you delegate to specialized agents and manage
 
 | # | Agent | File | Model | Reads | Writes |
 |---|-------|------|-------|-------|--------|
-| 1 | Analyst | `agents/analyst.md` | **opus** | user request | `01-analysis.md` |
+| 0 | Brainstormer | `agents/brainstormer.md` | **opus** | user request | `00-spec.md` |
+| 1 | Validator | `agents/analyst.md` | **opus** | `00-spec.md` | `01-analysis.md` |
 | 2 | Researcher | `agents/researcher.md` | sonnet | `01-analysis.md` | `02-research.md` |
 | 3 | Planner | `agents/planner.md` | **opus** | `02-research.md`, `01-analysis.md` (brief) | `03-plan.md` |
 | 3.5 | Designer | `agents/designer.md` | sonnet | screenshot, `03-plan.md` (brief) | `03.5-design.md` |
@@ -41,8 +43,8 @@ You don't do the work yourself — you delegate to specialized agents and manage
 | 6 | Debugger | `agents/debugger.md` | sonnet | `05-tests-{N}-{C}.md`, source files | `06-debug-{N}-{C}.md` |
 | 7 | Reviewer | `agents/reviewer.md` | sonnet | `04-impl-*.md` (briefs), source files | `07-review.md` |
 | 8 | Refactorer | `agents/refactorer.md` | haiku | `07-review.md` (minor + suggestions) | `08-refactor.md` + code |
-| 9 | Documenter | `agents/documenter.md` | haiku | `00-summary.md` + doc files | `09-docs.md` + docs |
-| 10 | Committer | `agents/committer.md` | haiku | `00-summary.md` | `10-commit.md` |
+| 9 | Documenter | `agents/documenter.md` | haiku | `pipeline-summary.md` + doc files | `09-docs.md` + docs |
+| 10 | Committer | `agents/committer.md` | haiku | `pipeline-summary.md` | `10-commit.md` |
 
 **Model strategy:** Opus — complex reasoning (analysis, planning). Sonnet — execution (code, tests, debug, review). Haiku — mechanical (refactoring, docs, commits).
 
@@ -53,7 +55,7 @@ You don't do the work yourself — you delegate to specialized agents and manage
 Every response starts with a compact pipeline status:
 
 ```
-[✅ Analyze] → [✅ Research] → [▶ Plan] → [ Design] → [ Implement] → [ Test] → [ Debug] → [ Review] → [ Refactor] → [ Document] → [ Commit]
+[✅ Brainstorm] → [✅ Validate] → [✅ Research] → [▶ Plan] → [ Design] → [ Implement] → [ Test] → [ Debug] → [ Review] → [ Refactor] → [ Document] → [ Commit]
 ```
 
 Icons: `✅` done · `▶` active · ` ` pending · `⭕` skipped · `🔄` re-run · `❌` failed
@@ -63,7 +65,8 @@ Multi-plan: `[▶ Implement 2/3]` · Debug cycle: `[▶ Debug 🔄1]`
 
 ```
 .task/
-├── 00-summary.md          ← pipeline summary (updated after each stage)
+├── pipeline-summary.md    ← pipeline summary (updated after each stage)
+├── 00-spec.md             ← brainstorm output (or transformed ready-made spec)
 ├── 01-analysis.md
 ├── 02-research.md
 ├── 03-plan.md
@@ -81,7 +84,7 @@ Multi-plan: `[▶ Implement 2/3]` · Debug cycle: `[▶ Debug 🔄1]`
 
 ## Pipeline Summary File
 
-After each stage completes, update `.task/00-summary.md` with one line per stage:
+After each stage completes, update `.task/pipeline-summary.md` with one line per stage:
 
 ```markdown
 # Pipeline Summary
@@ -96,6 +99,25 @@ After each stage completes, update `.task/00-summary.md` with one line per stage
 ```
 
 Terminal agents (Documenter, Committer) read **only this file** instead of all briefs.
+
+## Adaptive Entry
+
+When the user provides a ready-made specification, the Brainstormer (Stage 0) is skipped and the Validator (Stage 1) handles transformation and validation directly.
+
+**Detection order** (first match wins):
+1. User explicitly passes a file path or pastes spec content in their request
+2. A fresh spec exists at `docs/superpowers/specs/` (file modification time within the last hour)
+3. A TRC spec exists at the project's `.trc/` or `docs/` directory
+
+**When a ready-made spec is detected:**
+- Skip Stage 0 (Brainstormer) entirely
+- Pass the document to Stage 1 (Validator)
+- The Validator transforms the input into TRC-format `00-spec.md`, then validates as normal
+- Pipeline continues from Stage 2 (Researcher) onward
+
+**When no ready-made spec is detected:**
+- Run Stage 0 (Brainstormer) as normal
+- After brainstorm completes, proceed to Stage 1 (Validator)
 
 ## Execution Strategy
 
@@ -183,7 +205,7 @@ Minimum always: Analyze + Test + Commit.
 
 1. **File system as memory** — agents write to `.task/`, downstream read from files
 2. **Brief sections** — every output starts with `## Brief` (5-10 lines)
-3. **Pipeline summary** — terminal agents read `00-summary.md` instead of individual briefs
+3. **Pipeline summary** — terminal agents read `pipeline-summary.md` instead of individual briefs
 4. **Dependency map** — each agent reads only what's in the Reads column
 5. **Budget** — `find`/`grep` before reading; never read files >500 lines fully; max 5-7 files in context
 6. **One plan at a time** — Implementer and Tester process one plan per run
@@ -191,9 +213,9 @@ Minimum always: Analyze + Test + Commit.
 ## Starting the Pipeline
 
 1. `mkdir -p .task`
-2. Read `agents/analyst.md`
-3. Execute Analyst → present → wait for approval
-4. Update `00-summary.md`
+2. Check for ready-made spec (see Adaptive Entry above)
+3. If no spec found: Read `agents/brainstormer.md` → execute → wait for approval → update `pipeline-summary.md`
+4. Read `agents/analyst.md` → execute validation → wait for approval → update `pipeline-summary.md`
 5. Continue to next agent, following flow control
 
 If request is ambiguous — ask. Don't trigger full pipeline for simple questions.
@@ -201,7 +223,7 @@ If request is ambiguous — ask. Don't trigger full pipeline for simple question
 ## Resuming
 
 1. Check `.task/` for existing artifacts
-2. Read `00-summary.md` for quick context rebuild
+2. Read `pipeline-summary.md` for quick context rebuild
 3. Resume from next incomplete stage
 
 ## Cleaning Up
