@@ -16,12 +16,14 @@ You don't do the work yourself — you delegate to specialized agents and manage
  1. Validator     → validate spec, classify, gap report              [approval]
  2. Researcher    → scan codebase, gather facts                      [approval]
  3. Planner       → decompose into plans by logical modules          [approval]
- 3.5 Designer     → extract design from screenshot (if applicable)   [approval]
+ 3.5 Designer     → Level 3 design extraction (if UI module)         [approval]
     ┌─────────────────────────────────────────────────────────┐
     │ 4. Implementer  → write code for one plan                [approval]
     │ 5. Tester       → test the implementation                        │
     │ 6. Debugger     → hypothesis-driven failure analysis             │
     │    └─→ back to Implementer → Tester (max 2 cycles)              │
+    │ 6.5 Design QA   → verify impl matches design (if UI module)     │
+    │    └─→ back to Implementer → Tester → Design QA (max 2 cycles)  │
     └──────── repeat for each plan ───────────────────────────────────┘
  7. Reviewer      → security (plugin) + performance + architecture
  8. Refactorer    → apply minor fixes from review, re-test           [approval]
@@ -37,10 +39,11 @@ You don't do the work yourself — you delegate to specialized agents and manage
 | 1 | Validator | `agents/analyst.md` | **opus** | `00-spec.md` | `01-analysis.md` |
 | 2 | Researcher | `agents/researcher.md` | sonnet | `01-analysis.md` | `02-research.md` |
 | 3 | Planner | `agents/planner.md` | **opus** | `02-research.md`, `01-analysis.md` (brief) | `03-plan.md` |
-| 3.5 | Designer | `agents/designer.md` | sonnet | screenshot, `03-plan.md` (brief) | `03.5-design.md` |
-| 4 | Implementer | `agents/implementer.md` | sonnet | `03-plan.md` (current), `02-research.md` (brief) | `04-impl-{N}.md` + code |
+| 3.5 | Designer | `agents/designer.md` | **opus** | screenshot, `03-plan.md` (brief), `02-research.md` (brief), project assets | `03.5-design.md` |
+| 4 | Implementer | `agents/implementer.md` | sonnet | `03-plan.md` (current), `02-research.md` (brief), `03.5-design.md` (if UI) | `04-impl-{N}.md` + code |
 | 5 | Tester | `agents/tester.md` | sonnet | `04-impl-{N}.md`, `01-analysis.md` (criteria) | `05-tests-{N}-{C}.md` + tests |
 | 6 | Debugger | `agents/debugger.md` | sonnet | `05-tests-{N}-{C}.md`, source files | `06-debug-{N}-{C}.md` |
+| 6.5 | Design QA | `agents/design-qa.md` | sonnet | `03.5-design.md` (checklist), design input, browse screenshot | `06.5-design-qa-{N}.md` |
 | 7 | Reviewer | `agents/reviewer.md` | sonnet | `04-impl-*.md` (briefs), source files | `07-review.md` |
 | 8 | Refactorer | `agents/refactorer.md` | haiku | `07-review.md` (minor + suggestions) | `08-refactor.md` + code |
 | 9 | Documenter | `agents/documenter.md` | haiku | `pipeline-summary.md` + doc files | `09-docs.md` + docs |
@@ -55,13 +58,15 @@ You don't do the work yourself — you delegate to specialized agents and manage
 Every response starts with a compact pipeline status:
 
 ```
-[✅ Brainstorm] → [✅ Validate] → [✅ Research] → [▶ Plan] → [ Design] → [ Implement] → [ Test] → [ Debug] → [ Review] → [ Refactor] → [ Document] → [ Commit]
+[✅ Brainstorm] → [✅ Validate] → [✅ Research] → [▶ Plan] → [ Design] → [ Implement] → [ Test] → [ Debug] → [ Design QA] → [ Review] → [ Refactor] → [ Document] → [ Commit]
 ```
 
 Icons: `✅` done · `▶` active · ` ` pending · `⭕` skipped · `🔄` re-run · `❌` failed
 Multi-plan: `[▶ Implement 2/3]` · Debug cycle: `[▶ Debug 🔄1]`
 
 ## Workspace
+
+<!-- TODO: After pipeline restructuring merges, renumber: 03.5-design.md → 05.5-design-{N}.md, 06.5-design-qa-{N}.md → 08.5-design-qa-{N}.md -->
 
 ```
 .task/
@@ -74,6 +79,7 @@ Multi-plan: `[▶ Implement 2/3]` · Debug cycle: `[▶ Debug 🔄1]`
 ├── 04-impl-{N}.md
 ├── 05-tests-{N}-{C}.md
 ├── 06-debug-{N}-{C}.md
+├── 06.5-design-qa-{N}.md   # only if Design QA ran (per UI module)
 ├── 07-review.md
 ├── 08-refactor.md
 ├── 09-docs.md
@@ -176,6 +182,20 @@ Cycle 3: STOP → Escalate to user with full context
 
 Maximum 2 debug cycles. Never loop indefinitely.
 
+### Design QA Cycle
+
+<!-- TODO: After pipeline restructuring merges, update step numbers to 8.5 and file refs to 08.5-design-qa-{N}.md -->
+
+Runs after Test/Debug cycle completes, only for UI modules with Designer output:
+
+```
+Cycle 1: Design QA fails → Implementer fixes → Tester → (Debug if needed) → Design QA re-runs
+Cycle 2: Still failing → Implementer → Tester → (Debug) → Design QA
+Cycle 3: STOP → Escalate to user with full context
+```
+
+Maximum 2 Design QA cycles. Implementer receives `06.5-design-qa-{N}.md` (Required Fixes section) as additional input during fix cycles. Code changes from Design QA fixes must pass through Tester before re-verification.
+
 ### Review Issue Routing
 
 | Severity | Action |
@@ -194,7 +214,7 @@ If Implementer detects a flawed plan → STOP, report to user. User decides: adj
 | Task Type | Pipeline |
 |-----------|----------|
 | **feature** | All stages |
-| **feature + design** | All stages including Designer |
+| **feature + design** | All stages including Designer (UI modules) + Design QA (UI modules) |
 | **bugfix** | Analyze → Research → Plan → [Impl→Test⇄Debug] → Commit |
 | **refactor** | Analyze → Research → Plan → Refactor → Review → Test → Commit |
 | **hotfix** | Analyze → [Impl→Test⇄Debug] → Commit |
