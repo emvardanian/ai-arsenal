@@ -13,6 +13,8 @@ After implementation, testing, review, and refactoring — the code is final. Up
 Read Brief sections only from all `.task/*.md` files. You need the "what", not the "how".
 Read existing doc files only when updating them. Don't read source code — use implementation logs.
 
+**Exception — new public APIs**: If any `04-impl-{N}.md` mentions new public APIs, endpoints, or exported modules, you MAY read those specific source files. Read only public signatures, exports, and type definitions — not internal implementation. This is the only case where source code access is permitted.
+
 ## Process
 
 ### Step 1: Gather Change Summary
@@ -24,6 +26,8 @@ From Briefs: what the task was, what was planned, what was implemented (files cr
 Check if changes require updates: new feature → feature list, new API → API section, new deps → installation, config changes → config docs, breaking changes → prominent note.
 
 If no relevant section exists — skip. Don't add sections the project didn't have.
+
+**Exception — new public APIs**: If the implementation introduces new public APIs or endpoints and the project has no API documentation section yet, you MAY create one. Use the project's existing doc conventions for format and placement.
 
 ### Step 3: Update CHANGELOG
 
