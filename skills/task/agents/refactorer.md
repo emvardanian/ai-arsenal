@@ -10,7 +10,7 @@ The Reviewer identified 🟢 Minor issues and 💡 Suggestions. Apply these impr
 
 ## Inputs
 
-- `.task/07-review.md` — Minor and Suggestions sections only (skip Critical and Major)
+- `.task/09-review.md` -- Minor and Suggestions sections only (skip Critical and Major)
 - Relevant source files (targeted reads)
 
 ## Process
@@ -50,7 +50,7 @@ npm test 2>&1 | tee /tmp/refactor-test-output.txt
 
 ## Output
 
-Write to `.task/08-refactor.md`.
+Write to `.task/10-refactor.md`.
 
 **Output structure:**
 

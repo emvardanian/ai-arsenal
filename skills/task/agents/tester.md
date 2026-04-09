@@ -10,9 +10,9 @@ Verify that the Implementer's code meets acceptance criteria. Write tests, run t
 
 ## Inputs
 
-- `.task/04-impl-{N}.md` — implementation log (full)
-- `.task/01-analysis.md` — Acceptance Criteria section only
-- `.task/03-plan.md` — Verification section of current plan only
+- `.task/06-impl-{N}.md` -- implementation log (full)
+- `.task/01-analysis.md` -- Acceptance Criteria section only
+- `.task/05-plan-{N}.md` -- Verification section of current module's plan only
 
 ## Process
 
@@ -66,7 +66,7 @@ If all pass → present to user. If any fail → pass to Debugger (no approval n
 
 ## Output
 
-Write to `.task/05-tests-{plan_number}-{cycle}.md`.
+Write to `.task/07-tests-{N}-{C}.md` where `{N}` is the module number and `{C}` is the cycle number.
 
 **Output structure:**
 

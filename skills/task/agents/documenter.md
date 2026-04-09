@@ -56,7 +56,7 @@ For format examples, see `agents/refs/doc-formats.md`.
 
 ## Output
 
-Write to `.task/09-docs.md`.
+Write to `.task/11-docs.md`.
 
 **Output structure:**
 

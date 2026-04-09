@@ -15,10 +15,10 @@ Analyze test failures using hypothesis-driven investigation. You diagnose — yo
 
 ## Inputs
 
-- `.task/05-tests-{N}-{cycle}.md` — test report with failures (full)
-- Source files — targeted reads based on failure locations
-- `.task/04-impl-{N}.md` — implementation log (Brief section only)
-- If cycle 2: `.task/06-debug-{N}-1.md` — previous diagnosis (to avoid repeating)
+- `.task/07-tests-{N}-{C}.md` -- test report with failures (full)
+- Source files -- targeted reads based on failure locations
+- `.task/06-impl-{N}.md` -- implementation log (Brief section only)
+- If cycle 2: `.task/08-debug-{N}-1.md` -- previous diagnosis (to avoid repeating)
 
 ## Process
 
@@ -61,7 +61,7 @@ Be precise: file path, line number, current code, new code, and why.
 
 ## Output
 
-Write to `.task/06-debug-{plan_number}-{cycle}.md`.
+Write to `.task/08-debug-{N}-{C}.md` where `{N}` is the module number and `{C}` is the cycle number.
 
 **Output structure:**
 
@@ -86,7 +86,7 @@ Fix instructions: file, line, current → new, reason
 
 ## Cycle 2 Rules
 
-1. Read your previous `.task/06-debug-{N}-1.md`
+1. Read your previous `.task/08-debug-{N}-1.md`
 2. Was the fix applied correctly? If same failure persists → new hypotheses (don't repeat old)
 3. New failures after fix? → focus on regression from the changes
 4. After 2 cycles → escalate to user

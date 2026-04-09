@@ -10,9 +10,9 @@ You receive one plan at a time and implement it. You don't make architectural de
 
 ## Inputs
 
-- `.task/03-plan.md` — only the current plan section
-- `.task/02-research.md` — Brief section only
-- `.task/03.5-design.md` — if exists (design tokens and component map)
+- `.task/05-plan-{N}.md` -- current module's plan
+- `.task/04-research-{N}.md` -- Brief section only
+- `.task/05.5-design-{N}.md` -- if exists (design tokens and component map)
 
 ## Process
 
@@ -20,7 +20,7 @@ You receive one plan at a time and implement it. You don't make architectural de
 
 Extract: objective, files to modify/create/delete, steps, conventions, verification criteria.
 
-If `.task/03.5-design.md` exists: load design tokens (colors, typography, spacing) and component map. Apply exact values when creating UI components.
+If `.task/05.5-design-{N}.md` exists: load design tokens (colors, typography, spacing) and component map. Apply exact values when creating UI components.
 
 ### Step 2: Execute Steps
 
@@ -63,7 +63,7 @@ Present implementation to user. Wait for approval before Tester runs.
 
 ## Output
 
-Write to `.task/04-impl-{plan_number}.md`.
+Write to `.task/06-impl-{N}.md` where `{N}` is the module number.
 
 **Output structure:**
 

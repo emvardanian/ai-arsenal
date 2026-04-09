@@ -4,27 +4,21 @@
 
 Point-by-point verification that implementation matches the design specification. Uses the Designer's verification checklist plus visual comparison via browse/screenshot.
 
-<!-- TODO: After pipeline restructuring merges, this becomes Stage 8.5 -->
-
 ## Role
 
 Verify that the Implementer's code matches the Designer's specification exactly. Walk the verification checklist, screenshot the running implementation, compare against the original design, and produce a pass/fail report with file:line fix locations. Never fix code -- report only.
 
 ## Stage
 
-6.5 -- after Tester/Debugger cycle, before Reviewer.
+8.5 -- after Tester/Debugger cycle, before Reviewer.
 
 ## Activation
 
-<!-- TODO: After pipeline restructuring, check for 05.5-design-{N}.md -->
-
-Runs only when `.task/03.5-design.md` exists for the current module (Designer ran for this module). If the file does not exist, skip entirely -- this module has no design specification.
+Runs only when `.task/05.5-design-{N}.md` exists for the current module (Designer ran for this module). If the file does not exist, skip entirely -- this module has no design specification.
 
 ## Inputs
 
-<!-- TODO: After pipeline restructuring, update input refs to 05.5-design-{N}.md and 04-research-{N}.md -->
-
-- `.task/03.5-design.md` -- Verification Checklist section
+- `.task/05.5-design-{N}.md` -- Verification Checklist section
 - Original design (Figma export / screenshot from user)
 - Browse screenshot of implementation (agent captures this itself)
 
@@ -45,7 +39,7 @@ If the dev server is not running, start it. If it fails to start, report as a bl
 
 ### Step 2: Checklist Verification
 
-Walk through the Verification Checklist from `.task/03.5-design.md` point by point. For each item, evaluate as one of:
+Walk through the Verification Checklist from `.task/05.5-design-{N}.md` point by point. For each item, evaluate as one of:
 
 **PASS** -- with evidence from DOM inspection or computed styles:
 
@@ -145,9 +139,7 @@ FAIL -- any checklist FAIL or any HIGH visual deviation
 
 ## Output
 
-<!-- TODO: After pipeline restructuring, output becomes .task/08.5-design-qa-{N}.md -->
-
-Write to `.task/06.5-design-qa-{N}.md` where `{N}` is the module number.
+Write to `.task/08.5-design-qa-{N}.md` where `{N}` is the module number.
 
 ## Routing
 
@@ -163,7 +155,7 @@ Full cycle on FAIL:
 Design QA FAIL -> Implementer fixes -> Tester -> (Debugger if needed) -> Design QA re-runs
 ```
 
-- Implementer receives `06.5-design-qa-{N}.md` as additional input (Required Fixes section)
+- Implementer receives `08.5-design-qa-{N}.md` as additional input (Required Fixes section)
 - Code changes from Design QA fixes must pass through Tester before re-verification
 - Max 2 full cycles. After 2 cycles: escalate to user with full context
 
@@ -171,7 +163,7 @@ Design QA FAIL -> Implementer fixes -> Tester -> (Debugger if needed) -> Design 
 Cycle 1: Design QA fails -> Implementer fixes -> Tester -> (Debug if needed) -> Design QA
 Cycle 2: Still failing -> Implementer -> Tester -> (Debug if needed) -> Design QA
 Cycle 3: STOP -> Escalate to user with:
-  - All 06.5-design-qa-{N}.md reports
+  - All 08.5-design-qa-{N}.md reports
   - Remaining failures
   - What was attempted
 ```

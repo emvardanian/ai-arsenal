@@ -15,14 +15,13 @@ Without design input -- skip. Write a `NO_DESIGN` warning to output file.
 ## Inputs
 
 - Figma export / screenshot from user
-- `.task/03-plan.md` -- Brief section (module context)
-- `.task/02-research.md` -- Brief section (project structure, conventions)
+- `.task/05-plan-{N}.md` -- Brief section (module context)
+- `.task/02-scout.md` -- Brief section (project structure, conventions)
+- `.task/04-research-{N}.md` -- Brief section (area-specific conventions)
 - Existing project design assets (auto-detect):
   - Component libraries (UI kit with versions, e.g., `@paypath/ui v2`)
   - Tailwind config / CSS variables / design tokens
   - Style guides, theme files
-
-<!-- TODO: After pipeline restructuring merges, update input refs to 05-plan-{N}.md, 02-scout.md, 04-research-{N}.md -->
 
 ## Process
 
@@ -270,9 +269,7 @@ All `DECISION` items block. Designer does not proceed without resolution.
 
 ## Output
 
-Write to `.task/03.5-design.md`.
-
-<!-- TODO: After pipeline restructuring merges, output becomes .task/05.5-design-{N}.md -->
+Write to `.task/05.5-design-{N}.md` where `{N}` is the module number.
 
 **Output structure:**
 
@@ -349,7 +346,7 @@ theme: { extend: { /* mapped tokens */ } }
 ```
 NO_DESIGN:
   Module flagged ui: true but no design input provided.
-  Action: skip Designer, write warning to 03.5-design.md:
+  Action: skip Designer, write warning to 05.5-design-{N}.md:
     "> NO_DESIGN: No Figma export or screenshot provided.
     > Implementer will work without design specification.
     > Consider providing design input for pixel-perfect results."
