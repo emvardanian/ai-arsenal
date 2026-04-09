@@ -27,15 +27,14 @@ Read the Brief sections of analysis, plan, and implementation logs. Build a ment
 
 ### Step 2: Security Review — Delegate to Plugin
 
-Run the SAST scan on the changed files:
+Delegate security review to the `security-scanning` plugin:
+- Use subagent with type `security-scanning:security-auditor`
+- Pass the list of changed files from implementation logs
+- Capture findings and map to severity classification in Step 4
 
-```
-/security-scanning:security-sast
-```
+Do not duplicate the plugin's work -- trust its OWASP-based analysis.
 
-Capture the output. Map each finding to the severity classification in Step 4. Do not duplicate the plugin's work — trust its OWASP-based analysis.
-
-**If the `security-scanning` plugin is unavailable** (not installed or returns an error), fall back to the built-in checklist:
+**If the `security-scanning` plugin is unavailable** (subagent spawn fails), fall back to the built-in checklist:
 
 1. Load `refs/security-checklist.md`
 2. Run the checklist manually against all changed files
@@ -47,7 +46,7 @@ Capture the output. Map each finding to the severity classification in Step 4. D
 - **[SEVERITY]** | `file:line` | Description | Recommendation
 ```
 
-Where SEVERITY is one of: CRITICAL, HIGH, MEDIUM, LOW. Every finding — whether from the plugin or manual review — MUST use this format so downstream agents can process them consistently.
+Where SEVERITY is one of: CRITICAL, HIGH, MEDIUM, LOW. Every finding -- whether from the plugin or manual review -- MUST use this format so downstream agents can process them consistently.
 
 ### Step 3: Run 2 Review Dimensions
 

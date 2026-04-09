@@ -39,8 +39,9 @@ Each entry: one clear sentence describing the user-facing change, not implementa
 
 ### Step 4: Update API Documentation
 
-For new/modified functions, classes, endpoints — add JSDoc/TSDoc/docstrings.
-Match existing doc style. Document public functions only (skip private/internal unless complex).
+Document public API surfaces only (exported functions, REST endpoints, library interfaces). Skip internal/private functions unless their logic is non-obvious. Follow project conventions — if the project doesn't use docstrings, don't add them.
+
+For documented functions: add JSDoc/TSDoc/docstrings matching existing doc style.
 Include: param types, return types, exceptions, usage example for non-trivial functions.
 
 For format examples, see `agents/refs/doc-formats.md`.

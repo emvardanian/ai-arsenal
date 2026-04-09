@@ -40,11 +40,11 @@ For each task: read file section → apply change → verify it's purely cosmeti
 
 ### Step 4: Re-run Tests
 
-```bash
-npm test 2>&1 | tee /tmp/refactor-test-output.txt
-```
+Run the project's test command (detect from `package.json`, `Makefile`, `pyproject.toml`, or other project config). If no test command is found, skip tests and note in the report.
 
 **All tests must pass.** If any fail → revert that specific change, re-run, note in report.
+
+If 3+ changes are reverted, STOP and escalate to the orchestrator — the review findings may need reassessment.
 
 ### Step 5: Present for Approval
 
