@@ -1,0 +1,67 @@
+project:
+  name: "ai-arsenal"
+  type: "single-app"
+  package_manager: "none"
+  base_branch: "main"
+
+apps:
+  - name: ai-arsenal
+    path: "."
+    type: toolkit
+    description: "Claude Code skills, agents, and workflows toolkit"
+
+worktree:
+  enabled: true
+
+mcp:
+  preset: "minimal"
+
+qa:
+  enabled: true
+
+push:
+  require_approval: true
+  require_lint: false
+  require_tests: false
+  pr_target: "main"
+  auto_merge: false
+  merge_strategy: "squash"
+
+branching:
+  style: feature-name
+
+stealth:
+  enabled: false
+  ignore_target: exclude
+
+constitution:
+  root: ".trc/memory/constitution.md"
+  per_app: false
+
+context:
+  session_start:
+    constitution: true
+    files:
+      - "README.md"
+
+workflow:
+  chain: [specify, plan, tasks, implement]
+  blocks:
+    specify:
+      skills:
+        - document-writer
+    plan:
+      disable:
+        - agent-context
+        - version-awareness
+      skills:
+        - document-writer
+    implement:
+      disable:
+        - project-setup
+        - version-bump
+        - push-deploy
+      enable:
+        - qa-testing
+      skills:
+        - code-reviewer
