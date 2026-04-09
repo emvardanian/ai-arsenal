@@ -79,3 +79,25 @@ Command, result (✅ all passed / ❌ failures)
 - **Revert on failure** — don't debug during refactoring
 - **Small changes** — each refactoring minimal and obvious
 - **Tests are the safety net** — re-running is mandatory
+
+## Escalation
+
+Some refactoring tasks exceed what the haiku model can safely handle. Before starting any refactoring item, evaluate its complexity.
+
+**STOP and escalate to the orchestrator if:**
+- The change touches **more than 3 files**
+- The change requires **cross-module restructuring** (moving code between modules, changing module boundaries, restructuring dependency graphs)
+- The change involves **DRY extraction across multiple modules** (extracting shared code from files in different directories)
+
+**When escalating:**
+1. Do NOT attempt the change
+2. Write the item to your output with status "ESCALATED"
+3. Include: which review item, why it exceeds haiku scope, and the recommendation: "Route to Implementer (sonnet) for cross-file refactoring"
+
+**Stay on haiku for simple refactoring:**
+- Rename variables, functions, or parameters (any file count)
+- Extract constants or enums (single file)
+- Reorder functions or imports (single file)
+- Simplify conditionals or remove dead code (single file)
+- Fix formatting or style issues (any file count)
+- DRY extraction within a single file

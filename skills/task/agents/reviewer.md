@@ -27,15 +27,27 @@ Read the Brief sections of analysis, plan, and implementation logs. Build a ment
 
 ### Step 2: Security Review — Delegate to Plugin
 
-Run the `security-scanning` plugin on the changed files:
+Run the SAST scan on the changed files:
 
 ```
-/security-scanning
+/security-scanning:security-sast
 ```
 
 Capture the output. Map each finding to the severity classification in Step 4. Do not duplicate the plugin's work — trust its OWASP-based analysis.
 
-If `security-scanning` is unavailable, load `refs/security-checklist.md` and run the checklist manually.
+**If the `security-scanning` plugin is unavailable** (not installed or returns an error), fall back to the built-in checklist:
+
+1. Load `refs/security-checklist.md`
+2. Run the checklist manually against all changed files
+3. Report findings in the same format as the plugin (see below)
+
+**Unified finding format** (used for BOTH plugin output and manual checklist):
+
+```
+- **[SEVERITY]** | `file:line` | Description | Recommendation
+```
+
+Where SEVERITY is one of: CRITICAL, HIGH, MEDIUM, LOW. Every finding — whether from the plugin or manual review — MUST use this format so downstream agents can process them consistently.
 
 ### Step 3: Run 2 Review Dimensions
 
