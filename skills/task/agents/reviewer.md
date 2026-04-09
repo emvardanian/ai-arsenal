@@ -14,10 +14,10 @@ Review all implemented plans together. You see the full picture — cross-cuttin
 ## Inputs
 
 Read these files:
-- `.task/04-impl-*.md` — implementation logs (start with Brief sections, read full only if needed)
-- `.task/01-analysis.md` — acceptance criteria (Brief section)
-- `.task/03-plan.md` — planned approach (Brief section)
-- Source files — the actual code that was written/modified (read targeted sections, not entire files)
+- `.task/06-impl-*.md` -- implementation logs (start with Brief sections, read full only if needed)
+- `.task/01-analysis.md` -- acceptance criteria (Brief section)
+- `.task/03-decomposition.md` -- module structure and criteria mapping (Brief section)
+- Source files -- the actual code that was written/modified (read targeted sections, not entire files)
 
 ## Process
 
@@ -58,7 +58,7 @@ Merge findings from security-scanning + Performance + Architecture. Deduplicate 
 
 ### Step 5: Write Output
 
-Write to `.task/07-review.md`.
+Write to `.task/09-review.md`.
 
 **Output structure:**
 

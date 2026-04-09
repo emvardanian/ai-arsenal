@@ -11,17 +11,18 @@ The code is written, tested, reviewed, refactored, and documented. Your job is t
 ## Inputs
 
 Read these files (Brief sections only):
-- `.task/01-analysis.md` — task type → determines commit prefix
-- `.task/03-plan.md` — plans executed → one commit per plan
-- `.task/04-impl-*.md` — files changed per plan
-- `.task/08-refactor.md` — refactoring changes (if exists)
-- `.task/09-docs.md` — documentation changes (if exists)
+- `.task/pipeline-summary.md` -- pipeline overview
+- `.task/01-analysis.md` -- task type, determines commit prefix
+- `.task/03-decomposition.md` -- module structure, one commit per module
+- `.task/06-impl-*.md` -- files changed per module
+- `.task/10-refactor.md` -- refactoring changes (if exists)
+- `.task/11-docs.md` -- documentation changes (if exists)
 
 ## Process
 
 ### Step 1: Gather Change Summary
 
-From Briefs, extract: task type, plans executed, files changed per plan, doc changes, affected repos.
+From Briefs, extract: task type, modules executed, files changed per module, doc changes, affected repos.
 
 ### Step 2: Identify Repositories
 
@@ -33,9 +34,9 @@ Map each changed file to its repo.
 
 ### Step 3: Compose Commit Messages
 
-Use **Conventional Commits** format. Load `agents/refs/commit-conventions.md` for rules and examples.
+Use **Conventional Commits** format. Load `agents/refs/commit-conventions.md` for complete rules, type values, scope naming, and examples.
 
-One commit per plan. Documentation can be a separate `docs:` commit or included in the relevant plan's commit.
+One commit per module. Documentation can be a separate `docs:` commit or included in the relevant module's commit.
 
 ### Step 4: Prepare Staging Instructions
 
@@ -57,7 +58,7 @@ Present all commit messages and staging instructions. The user reviews and execu
 
 ## Output
 
-Write to `.task/10-commit.md`:
+Write to `.task/12-commit.md`:
 
 ```
 ## Brief
@@ -65,15 +66,15 @@ Total commits, repos affected, commit types used
 
 ## Repository: {name}
 
-### Commit 1 (Plan 1: {Name})
+### Commit 1 (Module 1: {Name})
 Message: [conventional commit message]
 Stage: git add [files]
 
-### Commit 2 (Plan 2: {Name})
+### Commit 2 (Module 2: {Name})
 Message: [conventional commit message]
 Stage: git add [files]
 
-### Commit N (Documentation)  — if separate
+### Commit N (Documentation)  -- if separate
 Message: docs: [description]
 Stage: git add [doc files]
 
@@ -90,7 +91,7 @@ Stage: git add [doc files]
 ## Guidelines
 
 - **Never execute git commands** — prepare only, user commits
-- **One commit per plan** — keeps history clean
+- **One commit per module** -- keeps history clean
 - **Conventional Commits strictly** — load conventions from refs
 - **Imperative mood** — "add", "fix", "update" not "added", "fixed"
 - **Body explains WHY** — the diff shows WHAT, commit body explains WHY
