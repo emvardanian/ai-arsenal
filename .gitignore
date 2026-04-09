@@ -1,1 +1,17 @@
 .idea
+# Claude Code — keep settings.json, commands, hooks, skills committed
+.claude/*
+!.claude/settings.json
+!.claude/commands/
+!.claude/hooks/
+!.claude/skills/
+
+# Tricycle Pro lock
+.tricycle.lock
+
+# Tricycle local overrides (per-developer, never committed)
+tricycle.config.local.yml
+.trc/local/
+.trc
+.claude
+.superpowers
