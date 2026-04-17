@@ -25,6 +25,7 @@ Default selection is derived from scope (FR-011). User may override via preamble
 | Tester | no | no | no |
 | Debugger | no | no | no |
 | Design-QA | no | no | no |
+| Reviewer-Lite (per module, Cycle 2) | YES | no | no |
 | Reviewer | no | no | no |
 | Refactorer | YES | no | no |
 | Documenter | YES | no | no |
@@ -36,17 +37,21 @@ For a full scope-L feature pipeline with 4 modules:
 
 | Tier | Total approvals |
 |---|---:|
-| strict | 13 (Spec + Decomposer + 4×Planner + 4×Implementer + Refactorer + Documenter + Committer) |
+| strict | 17 (Spec + Decomposer + 4×Planner + 4×Implementer + 4×Reviewer-Lite + Refactorer + Documenter + Committer) |
 | standard | 3 (Spec + Decomposer + Committer) |
 | express | 1 (Committer) |
+
+Cycle 1 strict count was 13; Cycle 2 adds 4 Reviewer-Lite gates (one per module) → 17. Standard/express unchanged.
 
 For a scope-M feature pipeline with 3 modules:
 
 | Tier | Total approvals |
 |---|---:|
-| strict | 9 (Spec + Decomposer + 3×Planner + 3×Implementer + Committer) |
+| strict | 12 (Spec + Decomposer + 3×Planner + 3×Implementer + 3×Reviewer-Lite + Committer) |
 | standard | 3 (Spec + Decomposer + Committer) |
 | express | 1 (Committer) |
+
+Cycle 1 strict M-3-module count was 9; Cycle 2 adds 3 Reviewer-Lite → 12.
 
 For a scope-S feature (no Decomposer):
 
@@ -80,13 +85,21 @@ When criticality is detected (see `criticality-signals.md`), the orchestrator re
 - Confirm strict → `tier: strict`, `tier_source: criticality`, `criticality_flag: true`.
 - Override with a lower tier → `tier: <lower>`, `tier_source: user`, `criticality_flag: true` (flag stays true even when overridden for audit).
 
-## Strict-Tier Invariant (FR-024, US5)
+## Strict-Tier Invariant (FR-024, US5 Cycle 1 + US4 Cycle 2)
 
-The strict-tier column of the gate matrix above MUST reproduce pre-redesign approval behavior exactly. Pre-redesign gated stages were:
+The strict-tier column of the gate matrix above MUST reproduce pre-Cycle-1 approval behavior plus exactly the Cycle-2 Reviewer-Lite additions. Pre-Cycle-1 gated stages were:
 
 - Brainstormer → Analyst/Validator → Decomposer → Planner (per module) → Designer (per UI module) → Implementer (per module) → Refactorer → Documenter → Committer
 
-Post-redesign, Brainstormer + Analyst merged into Spec; the single Spec stage's approval represents both historical gates. All other gates persist. Backward-compat verification (quickstart.md Path 3) confirms the mapping.
+Post-Cycle-1, Brainstormer + Analyst merged into Spec; the single Spec stage's approval represents both historical gates. All other gates persist.
+
+**Cycle 2 addition**: Reviewer-Lite gates per module at scope M+ (for feature/bugfix/refactor, not hotfix). This is the ONLY additive gate in strict tier.
+
+**Invariant**: `strict_tier_gates_count(cycle2) = strict_tier_gates_count(cycle1) + N_review_lite` where `N_review_lite = module_count if scope ∈ {M,L,XL} and task_type ≠ hotfix else 0`.
+
+Backward-compat verification (quickstart.md Path 6) confirms the mapping.
+
+**User override**: `review_lite: skip` preamble key disables the strict gate on Review-Lite. Review-Lite stage still runs; only approval prompt is skipped. Useful for power users.
 
 ## Reader contract
 

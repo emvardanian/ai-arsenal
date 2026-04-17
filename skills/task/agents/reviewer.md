@@ -15,8 +15,9 @@ Review all implemented plans together. You see the full picture — cross-cuttin
 
 Read these files:
 - `.task/06-impl-*.md` -- implementation logs (start with Brief sections, read full only if needed)
-- `.task/01-analysis.md` -- acceptance criteria (Brief section)
+- `.task/00-spec.md` (or `.task/01-analysis.md` on pre-Cycle-2 resume) -- acceptance criteria (Brief section)
 - `.task/03-decomposition.md` -- module structure and criteria mapping (Brief section)
+- `.task/09.5-review-lite-*.md` -- per-module Review-Lite output (Cycle 2), if present
 - Source files -- the actual code that was written/modified (read targeted sections, not entire files)
 
 ## Process
@@ -24,6 +25,22 @@ Read these files:
 ### Step 1: Understand Scope
 
 Read the Brief sections of analysis, plan, and implementation logs. Build a mental map of what was done across all plans.
+
+### Step 1.5: Read Review-Lite (Cycle 2)
+
+If `.task/09.5-review-lite-*.md` files exist:
+
+1. Read each file's Brief + Findings table.
+2. Aggregate all findings into a working set, grouped by (location, category).
+3. Track each finding's status:
+   - **Resolved**: finding was Critical and is no longer present in current code (check file:line; was fixed in Debug cycle).
+   - **Unresolved-Minor**: Minor findings that were not addressed in Debug (not critical enough to gate).
+4. Use this working set in Step 4 classification:
+   - **Resolved findings**: NEVER re-raise in your output (dedup rule — they were already handled by Review-Lite → Debug).
+   - **Unresolved-Minor findings**: include in `09-review.md` under a dedicated `### Review-Lite Minor Issues` section with `source: review-lite` annotation. Do not re-classify them.
+5. If Review-Lite flagged something as Critical and it persists in code → escalate as Critical in your output (Review-Lite already ran Debug cycles and the issue survived).
+
+**If no `09.5-review-lite-*.md` files exist** (scope XS/S, hotfix, or pre-Cycle-2 workspace): skip this step. Proceed to Step 2.
 
 ### Step 2: Security Review — Delegate to Plugin
 
@@ -99,6 +116,11 @@ Dimension, File:line, Fix
 ### s1: [Title]
 Dimension, Context
 
+## Review-Lite Minor Issues  (if any, Cycle 2)
+Findings carried forward from per-module `09.5-review-lite-*.md` that were not addressed in Debug cycles. One entry per unresolved Minor.
+### rl1: [Title]
+Module, Category, File:line, Description, source: review-lite
+
 ## Security Scan Results
 [Summary from security-scanning plugin output, or manual checklist results]
 
@@ -113,5 +135,6 @@ Dimension, Context
 - **Be specific** — point to exact file, line, and fix. "Code could be better" is useless
 - **Severity matters** — reserve 🔴 for genuine blockers. Don't cry wolf
 - **Don't repeat the Tester** — you review code quality, not re-run tests
+- **Don't repeat Review-Lite** — resolved Critical findings from Review-Lite are NEVER re-raised; unresolved Minor findings go to the dedicated `## Review-Lite Minor Issues` section with `source: review-lite`
 - **Cross-cutting view** — you see all plans together, look for inconsistencies
 - **Deduplicate** — same issue from multiple sources = one entry

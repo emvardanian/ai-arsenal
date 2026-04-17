@@ -43,12 +43,12 @@ Notes: Spec included for traceability (requirements documented). Scout/Decompose
 
 | task_type | stages |
 |---|---|
-| feature | `spec -> scout -> decomposer -> (researcher -> planner -> implementer -> tester ⇄ debugger)×N -> committer` |
-| bugfix | `spec -> scout -> (implementer -> tester ⇄ debugger) -> committer` |
-| refactor | `spec -> scout -> (planner -> implementer -> tester)×N -> committer` |
+| feature | `spec -> scout -> decomposer -> (researcher -> planner -> implementer -> tester ⇄ debugger -> reviewer-lite)×N -> committer` |
+| bugfix | `spec -> scout -> (implementer -> tester ⇄ debugger -> reviewer-lite) -> committer` |
+| refactor | `spec -> scout -> (planner -> implementer -> tester -> reviewer-lite)×N -> committer` |
 | hotfix | `spec -> (implementer -> tester ⇄ debugger) -> committer` |
 
-Notes: Decomposer included only for feature and refactor; bugfix/hotfix at M still skip it when the failure locus is known from the spec.
+Notes: Decomposer included only for feature and refactor; bugfix/hotfix at M still skip it when the failure locus is known from the spec. **Reviewer-Lite** (Cycle 2) runs per-module after Tester at M+ for feature/bugfix/refactor; hotfix skips Review-Lite for speed.
 
 ### L (15-40 files, 3-5 modules)
 
@@ -56,12 +56,12 @@ M plus cross-cutting review and documentation.
 
 | task_type | stages |
 |---|---|
-| feature | `spec -> scout -> decomposer -> (researcher -> planner -> implementer -> tester ⇄ debugger)×N -> reviewer -> refactorer -> documenter -> committer` |
-| bugfix | `spec -> scout -> decomposer? -> (implementer -> tester ⇄ debugger)×N -> reviewer -> committer` |
-| refactor | `spec -> scout -> decomposer -> (planner -> implementer -> tester)×N -> reviewer -> refactorer -> committer` |
+| feature | `spec -> scout -> decomposer -> (researcher -> planner -> implementer -> tester ⇄ debugger -> reviewer-lite)×N -> reviewer -> refactorer -> documenter -> committer` |
+| bugfix | `spec -> scout -> decomposer? -> (implementer -> tester ⇄ debugger -> reviewer-lite)×N -> reviewer -> committer` |
+| refactor | `spec -> scout -> decomposer -> (planner -> implementer -> tester -> reviewer-lite)×N -> reviewer -> refactorer -> committer` |
 | hotfix | `spec -> (implementer -> tester ⇄ debugger) -> reviewer -> committer` |
 
-Notes: `decomposer?` in L-bugfix triggers when affected-file count exceeds 15 and modules can be meaningfully split; otherwise flat.
+Notes: `decomposer?` in L-bugfix triggers when affected-file count exceeds 15 and modules can be meaningfully split; otherwise flat. **Reviewer-Lite** runs per-module at L+ for feature/bugfix/refactor; hotfix always skips it.
 
 ### XL (40+ files OR any UI work, 5+ modules)
 
@@ -69,7 +69,7 @@ L plus Designer and Design-QA for UI modules.
 
 | task_type | stages |
 |---|---|
-| feature | `spec -> scout -> decomposer -> (researcher -> planner -> designer? -> implementer -> tester ⇄ debugger -> design-qa?)×N -> reviewer -> refactorer -> documenter -> committer` |
+| feature | `spec -> scout -> decomposer -> (researcher -> planner -> designer? -> implementer -> tester ⇄ debugger -> design-qa? -> reviewer-lite)×N -> reviewer -> refactorer -> documenter -> committer` |
 | bugfix | same as L-bugfix, plus designer?/design-qa? for any UI module touched |
 | refactor | same as L-refactor, plus designer?/design-qa? when UI modules involved |
 | hotfix | L-hotfix (rare at XL scope) |

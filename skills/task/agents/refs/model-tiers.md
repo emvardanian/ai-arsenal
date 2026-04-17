@@ -24,6 +24,7 @@ Authoritative mapping from `(agent, mode)` to model tier. The orchestrator reads
 | tester | — | sonnet | Test writing, execution, and report formatting |
 | debugger | — | sonnet | Hypothesis generation and evidence scoring |
 | design-qa | — | haiku | Checklist-driven verification with DOM inspection; comparison is mechanical |
+| reviewer-lite | — | haiku | Per-module pattern-matchable critical-issue scan per `refs/reviewer-lite-checklist.md` (Cycle 2) |
 | reviewer | — | sonnet | Cross-cutting review across multiple modules; applies performance + architecture checklists |
 | refactorer | — | haiku | Mechanical rename/extract/reorder within single files |
 | documenter | — | haiku | README/CHANGELOG/docstring updates following existing conventions |
@@ -35,9 +36,9 @@ Authoritative mapping from `(agent, mode)` to model tier. The orchestrator reads
 |---|---:|---|
 | opus | 2 | decomposer, planner |
 | sonnet | 8 | spec (interactive), spec (interview), designer, researcher, implementer, tester, debugger, reviewer |
-| haiku | 7 | spec (validate), scout, design-qa, refactorer, documenter, committer |
+| haiku | 8 | spec (validate), scout, design-qa, reviewer-lite (Cycle 2), refactorer, documenter, committer |
 
-**Spec counts as one agent with three entries (one per mode: interactive, validate, interview).** Total agent files: 14 (after merge). Total rows: 16.
+**Spec counts as one agent with three entries. Reviewer-Lite added in Cycle 2.** Total agent files: 15. Total rows: 17.
 
 ## Reader contract
 

@@ -1,6 +1,6 @@
 # AI Arsenal
 
-A modular toolkit that supercharges Claude Code with reusable skills, sub-agents, and workflows for software development. The centerpiece is the **Task** skill — a scope-adaptive orchestrator that runs up to 14 specialized agents through a complete development lifecycle.
+A modular toolkit that supercharges Claude Code with reusable skills, sub-agents, and workflows for software development. The centerpiece is the **Task** skill — a scope-adaptive orchestrator that runs up to 15 specialized agents (including per-module Reviewer-Lite) through a complete development lifecycle, with optional delegation to the `superpowers` plugin for Planner/Debugger/Implementer/Tester.
 
 ## What It Does
 
@@ -95,7 +95,7 @@ Full (scope, task_type) matrix in `skills/task/agents/refs/scope-pipelines.md`.
 
 Users override tier at invocation with `tier: <strict\|standard\|express>` in the preamble, or mid-flight by replying "approve and switch to <tier>" at any gate. Full rules in `skills/task/agents/refs/approval-tiers.md`.
 
-### Agents (14 total)
+### Agents (15 total)
 
 | # | Agent | Model | What It Does | Strict-tier approval |
 |---|-------|-------|-------------|----------|
@@ -109,7 +109,8 @@ Users override tier at invocation with `tier: <strict\|standard\|express>` in th
 | 7 | **Tester** | sonnet | Write & run tests: unit, integration, endpoint, e2e, performance | — |
 | 8 | **Debugger** | sonnet | Hypothesis-driven failure analysis, 3 competing hypotheses | — |
 | 8.5 | **Design-QA** | haiku | Verify implementation matches Designer's checklist | — |
-| 9 | **Reviewer** | sonnet | Performance + architecture review. Delegates security to `security-scanning` | — |
+| 9.5 | **Reviewer-Lite** | haiku | Per-module critical-issue scan (secrets, N+1, SQLi, unhandled external, unbounded loops). Runs at scope M+ except hotfix. (Cycle 2) | ✅ |
+| 9 | **Reviewer** | sonnet | Performance + architecture review. Delegates security to `security-scanning`. Reads Reviewer-Lite output to dedupe. | — |
 | 10 | **Refactorer** | haiku | Apply minor improvements from review, re-run tests | ✅ |
 | 11 | **Documenter** | haiku | Update README, CHANGELOG, API docs, inline comments | ✅ |
 | 12 | **Committer** | haiku | Conventional commits. Delegates PR description to `git-pr-workflows` | ✅ (always) |

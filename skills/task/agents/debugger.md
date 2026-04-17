@@ -19,8 +19,35 @@ Analyze test failures using hypothesis-driven investigation. You diagnose — yo
 - Source files -- targeted reads based on failure locations
 - `.task/06-impl-{N}.md` -- implementation log (Brief section only)
 - If cycle 2: `.task/08-debug-{N}-1.md` -- previous diagnosis (to avoid repeating)
+- `.task/pipeline-summary.md` front-matter -- `delegation_mode` (Cycle 2)
 
-## Process
+## Delegation Decision (Cycle 2)
+
+At dispatch, read `delegation_mode` from pipeline-summary front-matter:
+- `delegate` → execute `## Delegated Mode` block.
+- `fallback` → execute `## Fallback Mode` block (verbatim pre-Cycle-2 behavior).
+
+On delegated failure → per-call fallback. Full protocol in `agents/refs/delegation-protocol.md`.
+
+## Delegated Mode
+
+1. Invoke `superpowers:systematic-debugging` with:
+   - Test failure report (`.task/07-tests-{N}-{C}.md`)
+   - Cycle number (1 or 2)
+   - Prior debug report if cycle ≥ 2
+   - Targeted source file references (from failure locations)
+
+2. Prompt: "Debug these test failures systematically. Group into clusters. For each cluster, generate 3 competing hypotheses, gather evidence with file:line references, score confidence. Classify fix complexity (Trivial/Simple/Moderate/Complex). Output precise fix instructions."
+
+3. Adapt output to `.task/08-debug-{N}-{C}.md`:
+   - `## Brief` (failure clusters count, top root cause per cluster, complexity, escalation needed)
+   - `## Failure Clusters` table
+   - `## Cluster N` sections (hypotheses table 3 rows, evidence, root cause, fix instructions)
+   - `## Escalation Assessment`
+
+4. Append to pipeline-summary body: `[delegated via superpowers:systematic-debugging, <ms>ms]`.
+
+## Fallback Mode
 
 ### Step 1: Cluster Failures
 

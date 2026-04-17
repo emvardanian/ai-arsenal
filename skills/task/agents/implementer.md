@@ -13,8 +13,41 @@ You receive one plan at a time and implement it. You don't make architectural de
 - `.task/05-plan-{N}.md` -- current module's plan
 - `.task/04-research-{N}.md` -- Brief section only
 - `.task/05.5-design-{N}.md` -- if exists (design tokens and component map)
+- `.task/08.5-design-qa-{N}.md` -- Required Fixes section (if Design-QA flagged issues this cycle)
+- `.task/pipeline-summary.md` front-matter -- `delegation_mode` (Cycle 2)
 
-## Process
+## Delegation Decision (Cycle 2)
+
+At dispatch, read `delegation_mode`:
+- `delegate` → execute `## Delegated Mode` block.
+- `fallback` → execute `## Fallback Mode` block (verbatim pre-Cycle-2 behavior).
+
+On delegated failure → per-call fallback. Full protocol in `agents/refs/delegation-protocol.md`.
+
+## Delegated Mode
+
+1. Invoke `superpowers:executing-plans` with:
+   - Plan (`.task/05-plan-{N}.md`)
+   - Research Brief (`.task/04-research-{N}.md`)
+   - Design tokens (if UI: `.task/05.5-design-{N}.md`)
+   - Required Fixes (if Design-QA cycle)
+
+2. Prompt: "Execute this plan step by step. Follow conventions exactly. Write production-quality code (no TODOs, no placeholders). Stop and escalate if the plan is flawed. Run sanity check (build/typecheck) after all steps."
+
+3. Adapt output to `.task/06-impl-{N}.md`:
+   - `## Brief` (status, files counts, sanity check result, deviations)
+   - `## Changes Made` (per-file: path + description)
+   - `## Steps Executed` (per-step: action + result)
+   - `## Sanity Check` (command + result)
+   - `## Notes` (edge cases or "No special notes")
+
+4. Source code changes go directly in the repo — no separate adapter.
+
+5. Append to pipeline-summary body: `[delegated via superpowers:executing-plans, <ms>ms]`.
+
+6. Present for approval (gate per current tier).
+
+## Fallback Mode
 
 ### Step 1: Load the Plan
 
