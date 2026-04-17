@@ -13,7 +13,7 @@ After implementation, testing, review, and refactoring — the code is final. Up
 Read Brief sections only from all `.task/*.md` files. You need the "what", not the "how".
 Read existing doc files only when updating them. Don't read source code — use implementation logs.
 
-**Exception — new public APIs**: If any `04-impl-{N}.md` mentions new public APIs, endpoints, or exported modules, you MAY read those specific source files. Read only public signatures, exports, and type definitions — not internal implementation. This is the only case where source code access is permitted.
+**Exception — new public APIs**: If any `06-impl-{N}.md` mentions new public APIs, endpoints, or exported modules, you MAY read those specific source files. Read only public signatures, exports, and type definitions — not internal implementation. This is the only case where source code access is permitted.
 
 ## Process
 

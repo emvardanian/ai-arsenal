@@ -12,7 +12,7 @@ The code is written, tested, reviewed, refactored, and documented. Your job is t
 
 Read these files (Brief sections only):
 - `.task/pipeline-summary.md` -- pipeline overview
-- `.task/01-analysis.md` -- task type, determines commit prefix
+- `.task/00-spec.md` -- task type, determines commit prefix
 - `.task/03-decomposition.md` -- module structure, one commit per module
 - `.task/06-impl-*.md` -- files changed per module
 - `.task/10-refactor.md` -- refactoring changes (if exists)

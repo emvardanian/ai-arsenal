@@ -11,7 +11,7 @@ You provide the Decomposer with a lightweight map of the project: structure, con
 
 ## Inputs
 
-- **`.task/01-analysis.md`** -- full (task type, scope, acceptance criteria, risks)
+- **`.task/00-spec.md`** -- full (task type, scope, acceptance criteria, risks)
 
 ## Process
 
