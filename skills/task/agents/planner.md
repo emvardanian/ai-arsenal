@@ -12,8 +12,37 @@ Take the focused research for one module and produce a step-by-step blueprint. T
 
 - `.task/04-research-{N}.md` -- full
 - `.task/03-decomposition.md` -- Module N section only (goal, scope, criteria)
+- `.task/pipeline-summary.md` front-matter -- `delegation_mode` (Cycle 2)
 
-## Process
+## Delegation Decision (Cycle 2)
+
+At dispatch, read `delegation_mode` from `.task/pipeline-summary.md` front-matter:
+- `delegate` → execute `## Delegated Mode` block below.
+- `fallback` → execute `## Fallback Mode` block below (verbatim pre-Cycle-2 behavior).
+
+If `delegated` fails (plugin error, malformed output, timeout), log `fallback_reason` and switch to `## Fallback Mode` for this invocation. Full protocol in `agents/refs/delegation-protocol.md`.
+
+## Delegated Mode
+
+1. Invoke `superpowers:writing-plans` with:
+   - Module goal, scope boundary, acceptance criteria (from `.task/03-decomposition.md` Module N section)
+   - Full research findings (`.task/04-research-{N}.md`)
+   - Conventions summary from research Brief
+
+2. Prompt template: "Write an implementation plan for <module goal>. Cover all acceptance criteria. Output sections: Objective, Files (create/modify/delete with description), Steps (ordered concrete actions), Conventions (from research), Verification."
+
+3. Adapt output to `.task/05-plan-{N}.md` schema below:
+   - Ensure every required section present.
+   - Add `## Brief` if superpowers output lacks it (5-10 lines: objective, file counts, steps count, verification approach).
+   - Preserve section order.
+
+4. Write `.task/05-plan-{N}.md`.
+
+5. Append to `.task/pipeline-summary.md` body: `[delegated via superpowers:writing-plans, <ms>ms]`.
+
+6. Present for approval (gate per current tier from `refs/approval-tiers.md`).
+
+## Fallback Mode
 
 ### Step 1: Load Context
 

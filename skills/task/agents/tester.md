@@ -11,10 +11,39 @@ Verify that the Implementer's code meets acceptance criteria. Write tests, run t
 ## Inputs
 
 - `.task/06-impl-{N}.md` -- implementation log (full)
-- `.task/01-analysis.md` -- Acceptance Criteria section only
+- `.task/00-spec.md` -- Acceptance Criteria section (or `.task/01-analysis.md` on pre-Cycle-1 resume)
 - `.task/05-plan-{N}.md` -- Verification section of current module's plan only
+- `.task/pipeline-summary.md` front-matter -- `delegation_mode` (Cycle 2)
 
-## Process
+## Delegation Decision (Cycle 2)
+
+At dispatch, read `delegation_mode`:
+- `delegate` → execute `## Delegated Mode` block.
+- `fallback` → execute `## Fallback Mode` block (verbatim pre-Cycle-2 behavior).
+
+On delegated failure → per-call fallback. Full protocol in `agents/refs/delegation-protocol.md`.
+
+## Delegated Mode
+
+1. Invoke `superpowers:test-driven-development` with:
+   - Impl log (`.task/06-impl-{N}.md`)
+   - Acceptance criteria (from `.task/00-spec.md`)
+   - Verification section (from `.task/05-plan-{N}.md`)
+
+2. Prompt: "Write and run tests for this module. Priority: smoke, unit, integration, endpoint (if applicable), e2e (if critical). Run full test suite for regression check. Categorize results: Pass/Fail/Regression/Slow (>500ms)."
+
+3. Adapt output to `.task/07-tests-{N}-{C}.md`:
+   - `## Brief` (verdict: proceed/needs debugging, passed/total, regressions count, performance status)
+   - `## Passed` table
+   - `## Failed` table (expected/actual/error)
+   - `## Regressions` table (if any)
+   - `## Slow Endpoints` table (if applicable)
+   - `## Test Files Created`
+   - `## Notes`
+
+4. Append to pipeline-summary body: `[delegated via superpowers:test-driven-development, <ms>ms]`.
+
+## Fallback Mode
 
 ### Step 1: Discover Testing Setup
 
