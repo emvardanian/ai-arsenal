@@ -43,7 +43,7 @@ Model column references `agents/refs/model-tiers.md` (authoritative). Summary ti
 
 | # | Agent | File | Model | Reads | Writes |
 |---|-------|------|-------|-------|--------|
-| 1 | Spec | `agents/spec.md` | sonnet (interactive) / haiku (validate) | user request OR ready-made doc | `00-spec.md` (body + Validation section) |
+| 1 | Spec | `agents/spec.md` | sonnet (interactive/interview) / haiku (validate) | user request OR ready-made doc OR `@<path>` ref for interview | `00-spec.md` (body + Validation section + Interview Delta if interview) |
 | 2 | Scout | `agents/scout.md` | haiku | `00-spec.md` | `02-scout.md` |
 | 3 | Decomposer | `agents/decomposer.md` | **opus** | `02-scout.md`, `00-spec.md` (brief) | `03-decomposition.md` |
 | 4 | Researcher | `agents/researcher.md` | sonnet | `03-decomposition.md` (module N), `02-scout.md` (brief) | `04-research-{N}.md` |
@@ -293,7 +293,7 @@ Each agent's model tier is resolved at dispatch time from `agents/refs/model-tie
 3. Cache for the run.
 4. Before dispatching each stage:
    - Resolve `agent_name` from the stage.
-   - Resolve `mode` if applicable (only Spec has modes: `interactive` or `validate`, determined by Spec's Mode Detection at stage entry).
+   - Resolve `mode` if applicable (only Spec has modes: `interactive`, `validate`, or `interview`, determined by Spec's Mode Detection at stage entry).
    - Look up `(agent_name, mode)` in the cached map.
    - Dispatch the agent with the resolved model.
 
@@ -308,6 +308,7 @@ For Spec:
 ```
 > **Interactive mode**: see `agents/refs/model-tiers.md` (entry: `spec, interactive`) — sonnet
 > **Validate mode**: see `agents/refs/model-tiers.md` (entry: `spec, validate`) — haiku
+> **Interview mode**: see `agents/refs/model-tiers.md` (entry: `spec, interview`) — sonnet
 ```
 
 **Fallback**: if `refs/model-tiers.md` is missing or unreadable, log a degradation warning and fall back to the agent's legacy inline `> **Model**:` line (if any) or to the tier shown in the SKILL.md Agent Reference table. Pipeline continues.
@@ -316,17 +317,24 @@ For Spec:
 
 ## Adaptive Entry
 
-The unified Spec agent (Stage 1) auto-detects mode per its `## Mode Detection` rules in `agents/spec.md`. No separate Brainstormer/Validator decision at the orchestrator level — one stage handles both paths.
+The unified Spec agent (Stage 1) auto-detects mode per its `## Mode Detection` rules in `agents/spec.md`. Three modes — `interactive`, `validate`, `interview` — one stage, one approval.
 
 **Detection order** (first match wins, from `agents/spec.md`):
-1. User explicitly passes a file path or pastes full spec content → **validate** mode.
-2. A fresh spec exists at `docs/superpowers/specs/` (mtime within last hour) → **validate** mode.
-3. A TRC spec exists at `specs/<branch>/spec.md` → **validate** mode.
-4. User preamble declares `mode: validate` → **validate** mode.
-5. User preamble declares `mode: interactive` → **interactive** mode.
-6. Otherwise → **interactive** mode.
+1. User preamble declares `mode: interview` → **interview** mode.
+2. User invocation contains `@<path>` reference AND interview keywords ("interview", "ask me", "deep dive", "grill me") → **interview** mode.
+3. User explicitly passes a file path or pastes full spec content → **validate** mode.
+4. A fresh spec exists at `docs/superpowers/specs/` (mtime within last hour) → **validate** mode.
+5. A TRC spec exists at `specs/<branch>/spec.md` → **validate** mode.
+6. User preamble declares `mode: validate` → **validate** mode.
+7. User preamble declares `mode: interactive` → **interactive** mode.
+8. Otherwise → **interactive** mode.
 
-In both modes, the Spec agent writes `.task/00-spec.md` with body + `## Validation` section. One stage, one approval (per current tier).
+**Mode semantics**:
+- `interactive`: structured linear dialogue from scratch (Brainstormer-equivalent behavior).
+- `validate`: transform a ready-made doc to canonical format + run gap/consistency/testability checks.
+- `interview`: read a starting doc (or rough idea), attack hidden assumptions and tradeoffs via adaptive AskUserQuestionTool rounds, produce a sharpened spec + `## Interview Delta` showing what changed.
+
+All modes write `.task/00-spec.md` with body + `## Validation` section. Interview mode additionally appends `## Interview Delta`. One pipeline stage, one approval (per current tier).
 
 ## Execution Strategy
 
