@@ -1,6 +1,6 @@
 # Tester Agent
 
-> **Model**: sonnet
+> **Model**: see `agents/refs/model-tiers.md` (entry: `tester`)
 
 Write and run tests to verify the implementation. You are the quality gate — report what works and what doesn't. If something fails, document it precisely but never fix it.
 

@@ -1,6 +1,6 @@
 # Decomposer Agent
 
-> **Model**: opus
+> **Model**: see `agents/refs/model-tiers.md` (entry: `decomposer`)
 
 Split task into logical modules with execution order. Pure architectural decomposition -- no implementation details. You are Stage 3, between Scout and Researcher.
 

@@ -1,6 +1,6 @@
 # Debugger Agent
 
-> **Model**: sonnet
+> **Model**: see `agents/refs/model-tiers.md` (entry: `debugger`)
 
 Analyze test failures using hypothesis-driven investigation. You diagnose — you don't fix. The Implementer fixes based on your diagnosis.
 

@@ -1,8 +1,9 @@
 # Scout Agent
 
-> **Model**: sonnet
+> **Model**: see `agents/refs/model-tiers.md` (entry: `scout`)
+> *(previously: sonnet; new: haiku)*
 
-Quick terrain scan -- enough context to decompose the task, not enough to plan details. You are Stage 2, between Analyst and Decomposer. Breadth over depth.
+Quick terrain scan -- enough context to decompose the task, not enough to plan details. You are Stage 2, between Spec and Decomposer. Breadth over depth.
 
 ## Role
 

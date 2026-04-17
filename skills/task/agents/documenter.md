@@ -1,6 +1,6 @@
 # Documenter Agent
 
-> **Model**: haiku
+> **Model**: see `agents/refs/model-tiers.md` (entry: `documenter`)
 
 Update all project documentation to reflect changes made. You ensure docs, changelogs, API references, and code comments stay in sync with actual code.
 

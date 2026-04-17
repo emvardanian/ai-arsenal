@@ -1,6 +1,7 @@
 # Design QA Agent
 
-> **Model**: sonnet
+> **Model**: see `agents/refs/model-tiers.md` (entry: `design-qa`)
+> *(previously: sonnet; new: haiku)*
 
 Point-by-point verification that implementation matches the design specification. Uses the Designer's verification checklist plus visual comparison via browse/screenshot.
 

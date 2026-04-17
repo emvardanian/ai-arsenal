@@ -1,6 +1,6 @@
-# Brainstorm Dialogue Patterns
+# Spec Dialogue Patterns
 
-Reference patterns for conducting structured brainstorm sessions. Loaded on demand by the Brainstormer agent.
+Reference patterns for the Spec agent's interactive mode. Loaded on demand when Spec runs in `interactive` mode. Section ordering and question flow are preserved from the pre-redesign Brainstormer to satisfy FR-025.
 
 ## One Question Rule
 
