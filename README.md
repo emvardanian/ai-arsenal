@@ -1,6 +1,10 @@
 # AI Arsenal
 
-A modular toolkit that supercharges Claude Code with reusable skills, sub-agents, and workflows for software development. The centerpiece is the **Task** skill — a scope-adaptive orchestrator that runs up to 15 specialized agents (including per-module Reviewer-Lite) through a complete development lifecycle, with optional delegation to the `superpowers` plugin for Planner/Debugger/Implementer/Tester.
+<!-- AUTOSYNC:BEGIN:agent-count -->
+The centerpiece is the **Task** skill — a scope-adaptive orchestrator that runs up to 15 specialized agents through a complete development lifecycle, with per-module Reviewer-Lite, optional delegation to the `superpowers` plugin, and daily-UX slash commands.
+<!-- AUTOSYNC:END -->
+
+A modular toolkit that supercharges Claude Code with reusable skills, sub-agents, and workflows for software development.
 
 ## What It Does
 
@@ -30,6 +34,7 @@ Migrate authentication stack to OAuth2 with refresh tokens.
 
 ### Pipeline (full — scope L/XL strict tier)
 
+<!-- AUTOSYNC:BEGIN:pipeline-diagram -->
 ```
 User Request
     │
@@ -68,6 +73,7 @@ User Request
 │          │   │  [aprv*]   │   │  [aprv*]  │   │  [aprv]   │
 └──────────┘   └────────────┘   └───────────┘   └───────────┘
 ```
+<!-- AUTOSYNC:END -->
 
 `[aprv]` = always gated. `[aprv*]` = gated only in strict tier (see Approval Tiers below).
 
@@ -75,6 +81,7 @@ User Request
 
 Pipeline selection is scope-driven. The skill skips heavyweight stages for smaller tasks:
 
+<!-- AUTOSYNC:BEGIN:scope-summary -->
 | Scope | Signals | Pipeline family | Typical approvals |
 |---|---|---|---|
 | **XS** | 1 file, 1 module | Impl → Test → Commit | 1 (express) |
@@ -82,6 +89,7 @@ Pipeline selection is scope-driven. The skill skips heavyweight stages for small
 | **M** | 5-15 files, 2-3 modules | Spec → Scout → Decompose → per-module loop → Commit | 3 (standard) |
 | **L** | 15-40 files, 3-5 modules | M + Reviewer + Refactorer + Documenter | ~11-13 (strict) |
 | **XL** | 40+ files OR UI | L + Designer + Design-QA | pre-redesign behavior |
+<!-- AUTOSYNC:END -->
 
 Full (scope, task_type) matrix in `skills/task/agents/refs/scope-pipelines.md`.
 
@@ -97,25 +105,34 @@ Users override tier at invocation with `tier: <strict\|standard\|express>` in th
 
 ### Agents (15 total)
 
+<!-- AUTOSYNC:BEGIN:agent-table -->
 | # | Agent | Model | What It Does | Strict-tier approval |
 |---|-------|-------|-------------|----------|
-| 1 | **Spec** | sonnet (interactive) / haiku (validate) | Dialogue or validate ready-made doc → `00-spec.md` + Validation section | ✅ |
+| 1 | **Spec** | sonnet (interactive/interview) / haiku (validate) | Dialogue or validate ready-made doc → `00-spec.md` + Validation section | ✅ |
 | 2 | **Scout** | haiku | Project structure, conventions, affected zones | — |
 | 3 | **Decomposer** | **opus** | Split task into modules with execution order | ✅ |
 | 4 | **Researcher** | sonnet | Deep per-module research. Uses `context7` for library docs | — |
-| 5 | **Planner** | **opus** | Per-module implementation plan | ✅ |
+| 5 | **Planner** | **opus** | Per-module implementation plan (delegates to `superpowers:writing-plans` when available) | ✅ |
 | 5.5 | **Designer** | sonnet | Extract design tokens. Complements `frontend-design` plugin | ✅ |
-| 6 | **Implementer** | sonnet | Execute one plan — write code following conventions | ✅ |
-| 7 | **Tester** | sonnet | Write & run tests: unit, integration, endpoint, e2e, performance | — |
-| 8 | **Debugger** | sonnet | Hypothesis-driven failure analysis, 3 competing hypotheses | — |
+| 6 | **Implementer** | sonnet | Execute one plan — write code (delegates to `superpowers:executing-plans`) | ✅ |
+| 7 | **Tester** | sonnet | Write & run tests (delegates to `superpowers:test-driven-development`) | — |
+| 8 | **Debugger** | sonnet | Hypothesis-driven failure analysis (delegates to `superpowers:systematic-debugging`) | — |
 | 8.5 | **Design-QA** | haiku | Verify implementation matches Designer's checklist | — |
-| 9.5 | **Reviewer-Lite** | haiku | Per-module critical-issue scan (secrets, N+1, SQLi, unhandled external, unbounded loops). Runs at scope M+ except hotfix. (Cycle 2) | ✅ |
-| 9 | **Reviewer** | sonnet | Performance + architecture review. Delegates security to `security-scanning`. Reads Reviewer-Lite output to dedupe. | — |
+| 9.5 | **Reviewer-Lite** | haiku | Per-module critical-issue scan (secrets, N+1, SQLi, unhandled external, unbounded loops). Scope M+ except hotfix. | ✅ |
+| 9 | **Reviewer** | sonnet | Cross-cutting Performance + Architecture review. Delegates security to `security-scanning`. Reads Reviewer-Lite output to dedupe. | — |
 | 10 | **Refactorer** | haiku | Apply minor improvements from review, re-run tests | ✅ |
 | 11 | **Documenter** | haiku | Update README, CHANGELOG, API docs, inline comments | ✅ |
 | 12 | **Committer** | haiku | Conventional commits. Delegates PR description to `git-pr-workflows` | ✅ (always) |
+<!-- AUTOSYNC:END -->
 
 Model tiers are authoritative in `skills/task/agents/refs/model-tiers.md` — single source of truth, dispatch-time lookup.
+
+### Daily-UX (Cycle 3)
+
+- **Slash commands** (`.claude/commands/`): `/task-quick`, `/task-fix`, `/task-feature`, `/task-full` — zero-preamble entry points.
+- **User preferences** (`~/.claude/task-prefs.json` + `<project>/.claude/task-prefs.json`): per-user and per-project default tier, scope, delegation, skip-stages, review_lite, approval_mode.
+- **Batch approval**: in strict tier with ≥2 independent modules, one prompt approves all Planners/Implementers/Reviewer-Lites instead of N gates each.
+- **README autosync**: `scripts/sync-readme.sh` regenerates this section from `skills/task/` sources; optional pre-commit hook via `scripts/install-hooks.sh`.
 
 ### Plugin Integrations
 

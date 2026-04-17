@@ -4,6 +4,8 @@
 
 Covers tier selection, per-stage gate resolution, mid-flight tier change, criticality detection, and the Test/Debug, Design-QA, Review-Lite, and Plan Deviation cycles.
 
+**Cycle 3 additions**: `approval_mode` field per stage type (`per_module` | `batch`). When strict tier + ≥2 independent modules at Planner/Implementer/Reviewer-Lite, orchestrator may offer batch approval — one prompt covering all modules. See `refs/batch-approval.md` for eligibility, prompt UX, state machine.
+
 ## Approval Tier Selection
 
 The orchestrator picks one of three **approval tiers** — `strict`, `standard`, `express` — that determines which pipeline stages prompt the user for approval.
@@ -91,6 +93,7 @@ Approval is **resolved dynamically per stage** based on the current tier. The `[
 - **Reviewer-Lite (Cycle 2) gated per-module in strict tier only.** User may declare `review_lite: skip` preamble key to run Review-Lite without approval gate (stage still runs).
 - **Strict tier matches pre-Cycle-1 behavior exactly plus N additional Reviewer-Lite gates** (where N = module count). Any change to strict-tier gate set is a constitution-level modification.
 - **Per-section internal approvals** during Spec interactive/interview dialogue are NOT counted as pipeline gates — they are part of the Spec stage's internal flow.
+- **Batch approval (Cycle 3)**: in strict tier, when Planner/Implementer/Reviewer-Lite dispatch for ≥2 modules that are all independent (`depends_on: []`), orchestrator may offer batch approval: one prompt covering all modules. User may accept-all, accept-except, or decline (sticky per stage type). See `refs/batch-approval.md` for full flow. Recorded per stage type in `approval_mode: per_module | batch`.
 
 ### Test/Debug Cycle
 

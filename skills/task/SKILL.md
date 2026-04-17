@@ -93,18 +93,43 @@ Loaded on demand, not at skill activation:
 
 Plus existing checklists (`architecture-checklist.md`, `performance-checklist.md`, `security-checklist.md`, `debug-examples.md`, `design-tokens-example.md`, `doc-formats.md`, `commit-conventions.md`, `commit-template.md`) loaded by their owning agents on demand.
 
+Cycle-3 refs: `refs/prefs.md`, `refs/slash-commands.md`, `refs/batch-approval.md` — loaded when prefs files detected, slash command invoked, or batch eligibility fires.
+
+## Slash Commands
+
+Four daily entry points in `.claude/commands/task-*.md`:
+
+| Command | Defaults | Use for |
+|---|---|---|
+| `/task-quick` | scope s, tier express | Quick edits, renames, 1-approval pipeline |
+| `/task-fix` | task_type bugfix | Bug fixes of any size |
+| `/task-feature` | scope m, tier standard, task_type feature | Standard features (3 approvals) |
+| `/task-full` | scope l, tier strict, task_type feature | Large cross-cutting work |
+
+User preamble in the command body overrides the command's defaults. See `refs/slash-commands.md`.
+
+## User Preferences
+
+Orchestrator reads two optional JSON files at startup:
+
+- `~/.claude/task-prefs.json` (global)
+- `<project_root>/.claude/task-prefs.json` (project)
+
+Precedence per field: preamble > slash command > project > global > Cycle-2 defaults. See `refs/prefs.md` for schema and fail-safes.
+
 ## Starting the Pipeline
 
 1. `mkdir -p .task`.
-2. **Parse invocation**: extract preamble for `scope`, `tier`, `critical`, `mode`, `delegation`, `review_lite` overrides. See `refs/pipelines.md` Scope Override and `refs/approvals.md` Tier Override.
-3. **Detect delegation**: probe `superpowers` plugin availability; apply user `delegation` override. Set `delegation_mode` + `delegation_source` in pipeline-summary front-matter. See `refs/delegation-protocol.md`.
+2. **Parse invocation**: detect `entry_point` (slash command used, if any); extract preamble for `scope`, `tier`, `critical`, `mode`, `delegation`, `review_lite`, `approval_mode` overrides. See `refs/pipelines.md` Scope Override and `refs/approvals.md` Tier Override.
+2a. **Load preferences** (Cycle 3): read `~/.claude/task-prefs.json` (global) then `<project>/.claude/task-prefs.json` (project). Merge per precedence in `refs/prefs.md`. Record `prefs_source` in pipeline-summary front-matter.
+3. **Detect delegation**: probe `superpowers` plugin availability; apply user/prefs `delegation` override. Set `delegation_mode` + `delegation_source` in front-matter. See `refs/delegation-protocol.md`.
 4. **Check for ready-made spec / interview trigger** (see `refs/pipelines.md` Adaptive Entry). Determine Spec mode: `interactive`, `validate`, or `interview`.
-5. **Run Stage 1 — Spec** (`agents/spec.md`). Writes `.task/00-spec.md` with body + Validation + `classified_scope` in front-matter. Gate per current tier (`refs/approvals.md`).
-6. **Classify scope** per `refs/pipelines.md` Scope Classification. Write `scope`, `scope_source`, `scope_signals` to pipeline-summary front-matter. User override wins.
-7. **Select tier** per `refs/approvals.md`. Default from scope: XS/S=express, M=standard, L/XL=strict. Apply user override and criticality gate prompt (`refs/criticality-signals.md`). Record `tier`, `tier_source`, `tier_override`, `criticality_flag`.
-8. **Resolve pipeline**: look up `(scope, task_type)` in `refs/scope-pipelines.md`. Record `skipped_stages` in front-matter with reasons.
-9. **Dispatch stages** in order. At each stage: resolve model (`refs/model-tiers.md`), resolve approval gate (`refs/approval-tiers.md`), resolve delegation (`refs/delegation-protocol.md` for wrapper agents), read `agents/<stage>.md`, execute, update pipeline-summary body. Wait for approval if gate fires.
-10. **Per-module loops** at M+: inner stages (Research → Plan → Impl → Test ⇄ Debug → Review-Lite, plus Designer/Design-QA for UI) repeat per Decomposer module.
+5. **Run Stage 1 — Spec** (`agents/spec.md`). Writes `.task/00-spec.md`. Gate per current tier (`refs/approvals.md`).
+6. **Classify scope** per `refs/pipelines.md`. Write to front-matter. Effective order: preamble > slash > project prefs > global prefs > classifier.
+7. **Select tier** per `refs/approvals.md`. Default from scope; apply user/slash/prefs override and criticality gate prompt. Record `tier`, `tier_source`, `tier_override`, `criticality_flag`.
+8. **Resolve pipeline**: look up `(scope, task_type)` in `refs/scope-pipelines.md`. Merge `skip_stages` from prefs into `skipped_stages`. Record with reasons.
+9. **Dispatch stages** in order. At each stage: resolve model + approval gate + delegation + batch eligibility (for Planner/Implementer/Reviewer-Lite at strict, see `refs/batch-approval.md`). Read `agents/<stage>.md`, execute, update pipeline-summary body. Wait for approval (individual or batch) as resolved.
+10. **Per-module loops** at M+: inner stages repeat per Decomposer module. `approval_mode` (per stage type) governs batch vs per-module gating in strict tier.
 11. **Committer** (always last, always gated).
 
 If request is ambiguous — ask. Don't trigger full pipeline for simple questions.
