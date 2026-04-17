@@ -14,6 +14,7 @@ Authoritative mapping from `(agent, mode)` to model tier. The orchestrator reads
 |---|---|---|---|
 | spec | interactive | sonnet | Structured dialogue with the user; benefits from reasoning but opus is overkill for one-question-at-a-time flow |
 | spec | validate | haiku | Section presence + consistency checks are mechanical; template transformation is pattern matching |
+| spec | interview | sonnet | Adaptive gap-attack question generation; reads working spec, spots hidden assumptions, constructs non-obvious multi-choice questions with named tradeoffs |
 | scout | — | haiku | grep/find/ls + config file reads; no judgment calls beyond listing |
 | decomposer | — | opus | Architectural DAG construction; highest-stakes reasoning in the pipeline |
 | researcher | — | sonnet | Code tracing and dependency analysis; requires following symbols across files |
@@ -33,10 +34,10 @@ Authoritative mapping from `(agent, mode)` to model tier. The orchestrator reads
 | Tier | Count | Agents |
 |---|---:|---|
 | opus | 2 | decomposer, planner |
-| sonnet | 7 | spec (interactive), designer, researcher, implementer, tester, debugger, reviewer |
+| sonnet | 8 | spec (interactive), spec (interview), designer, researcher, implementer, tester, debugger, reviewer |
 | haiku | 7 | spec (validate), scout, design-qa, refactorer, documenter, committer |
 
-**Spec counts as one agent with two entries (one per mode).** Total agent files: 14 (after merge). Total rows: 15.
+**Spec counts as one agent with three entries (one per mode: interactive, validate, interview).** Total agent files: 14 (after merge). Total rows: 16.
 
 ## Reader contract
 
