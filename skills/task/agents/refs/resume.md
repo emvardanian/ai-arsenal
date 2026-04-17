@@ -24,6 +24,15 @@ The orchestrator detects pre-redesign (`v1`) vs redesigned (`v2`) workspaces by 
 | `delegation_mode` (Cycle 2) | `fallback` (safe default; no retroactive delegation) |
 | `review_lite_enabled` (Cycle 2) | `false` (no retroactive Review-Lite insertion) |
 
+### Cycle 3 additive fields on resume
+
+Missing Cycle 3 front-matter fields default safely:
+- Missing `approval_mode` → all stage types default to `per_module` (no retroactive batch approval).
+- Missing `prefs_source` → `none` (no retroactive prefs application).
+- Missing `entry_point` → `none` (bare invocation semantics).
+
+Orchestrator does NOT re-evaluate prefs on resume — the original run's resolved config stands.
+
 ### v2.1 vs pre-Cycle-2 detection (Cycle 2)
 
 Orchestrator encountering v2 front-matter without Cycle 2 fields:
