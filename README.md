@@ -1,99 +1,120 @@
 # AI Arsenal
 
-A modular toolkit that supercharges Claude Code with reusable skills, sub-agents, and workflows for software development. The centerpiece is the **Task** skill -- an orchestrator that runs 15 specialized agents through a complete development lifecycle.
+A modular toolkit that supercharges Claude Code with reusable skills, sub-agents, and workflows for software development. The centerpiece is the **Task** skill — a scope-adaptive orchestrator that runs up to 14 specialized agents through a complete development lifecycle.
 
 ## What It Does
 
-You give Claude a development task. The Task skill breaks it into modules, delegates each module to specialized agents in a per-module loop, manages approvals, handles test failures, and produces clean commits -- all while keeping context lightweight through file-based communication.
+You give Claude a development task. The Task skill classifies it by **scope** (XS/S/M/L/XL), picks the matching pipeline, dispatches the needed agents, gates approvals by the chosen **tier** (strict/standard/express), and produces clean commits — keeping context lightweight through file-based communication.
 
 ```
 You: "Add JWT authentication with refresh tokens"
 
-Task: Brainstormer -> Validator -> Scout -> Decomposer
-        -> [per module: Researcher -> Planner -> Implementer -> Tester <-> Debugger]
-        -> Reviewer -> Refactorer -> Documenter -> Committer
+Task: Spec → Scout → Decomposer → (Researcher → Planner → Implementer → Tester)×N → Reviewer → Refactorer → Documenter → Committer
+      ↑ 1 stage (merged Brainstormer+Validator)      ↑ per-module loops   ↑ security-scanning   ↑ git-pr-workflows
+```
+
+### Invocation examples
+
+```
+scope: s, tier: express
+Rename getUserById to fetchUserById in user-service.
+
+(auto-classified scope-M, default standard tier, 3 approvals)
+Add email notifications for password reset.
+
+scope: l, tier: strict
+Migrate authentication stack to OAuth2 with refresh tokens.
 ```
 
 ## Architecture
 
-### Pipeline
+### Pipeline (full — scope L/XL strict tier)
 
 ```
 User Request
-    |
-    v
-+--------------+   +------------+   +---------+   +-------------+
-| 0.Brainstorm |-->| 1.Validate |-->| 2.Scout |-->| 3.Decompose |
-|    [aprv]    |   |   [aprv]   |   |         |   |   [aprv]    |
-+--------------+   +------------+   +---------+   +-------------+
-                                                        |
-                    +-----------------------------------+
-                    v
-              +=============================================+
-              |  For each module (x N):                     |
-              |                                             |
-              |  +------------+   +--------+                |
-              |  |4.Research  |-->|5.Plan  |                |
-              |  |            |   | [aprv] |                |
-              |  +------------+   +---+----+                |
-              |                       |                     |
-              |            +----------+----------+          |
-              |            v                     v          |
-              |  +-----------+         +------------+       |
-              |  |5.5 Design |         |6.Implement |       |
-              |  |   [aprv]  |         |   [aprv]   |       |
-              |  |(UI only)  |         +-----+------+       |
-              |  +-----------+               |              |
-              |                              v              |
-              |                        +---------+          |
-              |                        | 7.Test  |          |
-              |                        +----+----+          |
-              |                             |               |
-              |                        pass?|               |
-              |                   +----+----+----+          |
-              |                   v              v          |
-              |              [continue]    +---------+      |
-              |                   |        | 8.Debug |      |
-              |                   |        +----+----+      |
-              |                   |             |           |
-              |                   |     fix -> Impl -> Test |
-              |                   |        (max 2 cycles)   |
-              |                   v                         |
-              |           +-------------+                   |
-              |           |8.5 Design QA|                   |
-              |           | (UI only)   |                   |
-              |           +-------------+                   |
-              |           (max 2 cycles)                    |
-              +=============================================+
-                    |
-                    v
-+-----------+   +------------+   +-------------+   +------------+
-| 9.Review  |-->|10.Refactor |-->| 11.Document |-->| 12.Commit  |
-|           |   |   [aprv]   |   |    [aprv]   |   |            |
-+-----------+   +------------+   +-------------+   +------------+
+    │
+    ▼
+┌──────────┐   ┌──────────┐   ┌────────────┐
+│ 1.Spec   │──▶│ 2.Scout  │──▶│3.Decompose │
+│ [aprv*]  │   │          │   │  [aprv*]   │
+└──────────┘   └──────────┘   └────────────┘
+                                     │
+                    ┌────────────────┘
+                    ▼
+              ╔═══════════════════════════════════════╗
+              ║  For each module (× N):                ║
+              ║                                       ║
+              ║  ┌──────────┐  ┌──────────┐           ║
+              ║  │4.Research│─▶│ 5.Plan   │           ║
+              ║  └──────────┘  │ [aprv*]  │           ║
+              ║                └────┬─────┘           ║
+              ║       ┌─────────────┤ 5.5.Design(UI)  ║
+              ║       ▼             ▼ [aprv*]         ║
+              ║  ┌──────────┐  ┌──────────┐           ║
+              ║  │6.Implmnt │─▶│ 7.Test   │           ║
+              ║  │ [aprv*]  │  └────┬─────┘           ║
+              ║  └──────────┘       │                 ║
+              ║       ▲             │ pass?           ║
+              ║       │        ┌────┴─────┐           ║
+              ║       │   no──▶│ 8.Debug  │           ║
+              ║       └── fix ◀┘          │           ║
+              ║       (max 2 cycles)                  ║
+              ║                ┌ 8.5.DesignQA(UI)     ║
+              ╚═══════════════════════════════════════╝
+                    │
+                    ▼
+┌──────────┐   ┌────────────┐   ┌───────────┐   ┌───────────┐
+│ 9.Review │──▶│10.Refactor │──▶│11.Document│──▶│12.Commit  │
+│          │   │  [aprv*]   │   │  [aprv*]  │   │  [aprv]   │
+└──────────┘   └────────────┘   └───────────┘   └───────────┘
 ```
 
-### Agents
+`[aprv]` = always gated. `[aprv*]` = gated only in strict tier (see Approval Tiers below).
 
-| # | Agent | File | Model | What It Does | Approval |
-|---|-------|------|-------|-------------|----------|
-| 0 | **Brainstormer** | `brainstormer.md` | opus | Interactive spec brainstorm with the user | yes |
-| 1 | **Validator** | `analyst.md` | opus | Validate spec, classify task, gap report, pipeline selection | yes |
-| 2 | **Scout** | `scout.md` | sonnet | Light research: project structure, conventions, module boundaries | -- |
-| 3 | **Decomposer** | `decomposer.md` | opus | Split task into modules, define execution order and dependencies | yes |
-| 4 | **Researcher** | `researcher.md` | sonnet | Deep per-module research: affected files, patterns, library docs via `context7` | -- |
-| 5 | **Planner** | `planner.md` | opus | Detailed implementation plan for one module | yes |
-| 5.5 | **Designer** | `designer.md` | opus | Extract design tokens from screenshots/mockups (UI modules only) | yes |
-| 6 | **Implementer** | `implementer.md` | sonnet | Write code for one module following plan and conventions | yes |
-| 7 | **Tester** | `tester.md` | sonnet | Write and run tests: unit, integration, endpoint, e2e, performance | -- |
-| 8 | **Debugger** | `debugger.md` | sonnet | Hypothesis-driven failure analysis, 3 competing hypotheses per cluster | -- |
-| 8.5 | **Design QA** | `design-qa.md` | sonnet | Verify implementation matches design tokens (UI modules only) | -- |
-| 9 | **Reviewer** | `reviewer.md` | sonnet | Performance + architecture review. Delegates security to `security-scanning` plugin | -- |
-| 10 | **Refactorer** | `refactorer.md` | haiku | Apply minor improvements from review, re-run tests | yes |
-| 11 | **Documenter** | `documenter.md` | haiku | Update README, CHANGELOG, API docs, JSDoc, inline comments | yes |
-| 12 | **Committer** | `committer.md` | haiku | Conventional commits per module. Delegates PR description to `git-pr-workflows` | -- |
+### Scope-Adaptive Pipeline
 
-**Model strategy:** Opus for complex reasoning (brainstorm, validation, decomposition, planning, design). Sonnet for execution (research, code, tests, debug, review). Haiku for mechanical work (refactoring, docs, commits).
+Pipeline selection is scope-driven. The skill skips heavyweight stages for smaller tasks:
+
+| Scope | Signals | Pipeline family | Typical approvals |
+|---|---|---|---|
+| **XS** | 1 file, 1 module | Impl → Test → Commit | 1 (express) |
+| **S** | 2-5 files, 1 module | Spec → Plan → Impl → Test → Commit | 1 (express) |
+| **M** | 5-15 files, 2-3 modules | Spec → Scout → Decompose → per-module loop → Commit | 3 (standard) |
+| **L** | 15-40 files, 3-5 modules | M + Reviewer + Refactorer + Documenter | ~11-13 (strict) |
+| **XL** | 40+ files OR UI | L + Designer + Design-QA | pre-redesign behavior |
+
+Full (scope, task_type) matrix in `skills/task/agents/refs/scope-pipelines.md`.
+
+### Approval Tiers
+
+| Tier | When gates fire | Default for |
+|---|---|---|
+| strict | every pre-redesign gate (Spec, Decompose, Plan×N, Design×N, Impl×N, Refactor, Doc, Commit) | scope L, XL |
+| standard | Spec, Decompose, Commit only (3 gates) | scope M |
+| express | Commit only (1 gate) | scope XS, S |
+
+Users override tier at invocation with `tier: <strict\|standard\|express>` in the preamble, or mid-flight by replying "approve and switch to <tier>" at any gate. Full rules in `skills/task/agents/refs/approval-tiers.md`.
+
+### Agents (14 total)
+
+| # | Agent | Model | What It Does | Strict-tier approval |
+|---|-------|-------|-------------|----------|
+| 1 | **Spec** | sonnet (interactive) / haiku (validate) | Dialogue or validate ready-made doc → `00-spec.md` + Validation section | ✅ |
+| 2 | **Scout** | haiku | Project structure, conventions, affected zones | — |
+| 3 | **Decomposer** | **opus** | Split task into modules with execution order | ✅ |
+| 4 | **Researcher** | sonnet | Deep per-module research. Uses `context7` for library docs | — |
+| 5 | **Planner** | **opus** | Per-module implementation plan | ✅ |
+| 5.5 | **Designer** | sonnet | Extract design tokens. Complements `frontend-design` plugin | ✅ |
+| 6 | **Implementer** | sonnet | Execute one plan — write code following conventions | ✅ |
+| 7 | **Tester** | sonnet | Write & run tests: unit, integration, endpoint, e2e, performance | — |
+| 8 | **Debugger** | sonnet | Hypothesis-driven failure analysis, 3 competing hypotheses | — |
+| 8.5 | **Design-QA** | haiku | Verify implementation matches Designer's checklist | — |
+| 9 | **Reviewer** | sonnet | Performance + architecture review. Delegates security to `security-scanning` | — |
+| 10 | **Refactorer** | haiku | Apply minor improvements from review, re-run tests | ✅ |
+| 11 | **Documenter** | haiku | Update README, CHANGELOG, API docs, inline comments | ✅ |
+| 12 | **Committer** | haiku | Conventional commits. Delegates PR description to `git-pr-workflows` | ✅ (always) |
+
+Model tiers are authoritative in `skills/task/agents/refs/model-tiers.md` — single source of truth, dispatch-time lookup.
 
 ### Plugin Integrations
 
@@ -103,7 +124,7 @@ The pipeline delegates specialized work to external plugins when available, fall
 |--------|---------|---------|----------|
 | `security-scanning` | Reviewer | OWASP-based security audit | Built-in SAST checklist (`refs/security-checklist.md`) |
 | `git-pr-workflows` | Committer | PR description generation | Manual summary in commit output |
-| `agent-teams` | Orchestrator | Parallel execution for Review, multi-module Implement, Debug | Sequential subagents |
+| `agent-teams` | Orchestrator | Parallel execution for Review, multi-plan Implement, Debug | Sequential subagents |
 | `context7` (MCP) | Researcher | Live library documentation lookup | Infer from existing code |
 | `frontend-design` | Designer | Production-grade UI code generation | Designer tokens only |
 
@@ -121,82 +142,58 @@ The orchestrator picks the best available execution strategy:
 
 Agents communicate through files, not conversation history. This keeps each agent's context window clean:
 
-- **`.task/` workspace** -- every agent writes output to numbered files (`01-analysis.md`, `02-scout.md`, etc.)
-- **Per-module files** -- Research, Plan, Implement, Test, and Debug write per-module outputs (`04-research-{N}.md`, `05-plan-{N}.md`, `06-impl-{N}.md`, `07-tests-{N}-{C}.md`, `08-debug-{N}-{C}.md`) where `{N}` is the module number and `{C}` is the cycle number
-- **Brief sections** -- every output starts with a 5-10 line summary. Downstream agents read only briefs when full context isn't needed
-- **Pipeline summary** -- `pipeline-summary.md` accumulates one line per completed stage. Terminal agents (Documenter, Committer) read only this file
-- **Dependency map** -- each agent reads only its declared inputs (see SKILL.md Agent Reference table)
-- **Refs on demand** -- checklists and examples live in `agents/refs/` and load only when needed (Level 3 progressive disclosure)
+- **`.task/` workspace** — every agent writes output to numbered files (`01-analysis.md`, `02-research.md`, etc.)
+- **Brief sections** — every output starts with a 5-10 line summary. Downstream agents read only briefs when full context isn't needed
+- **Pipeline summary** — `00-summary.md` accumulates one line per completed stage. Terminal agents (Documenter, Committer) read only this file
+- **Dependency map** — each agent reads only its declared inputs (see SKILL.md Agent Reference table)
+- **Refs on demand** — checklists and examples live in `agents/refs/` and load only when needed (Level 3 progressive disclosure)
 
 ### Adaptive Pipeline
 
-Not every task uses all 15 agents:
+Not every task uses all 10 agents:
 
 | Task Type | Pipeline |
 |-----------|----------|
-| Feature | All stages |
-| Feature + Design | All stages + Designer (UI modules) + Design QA (UI modules) |
-| Bugfix | Validator -> Scout -> Decomposer -> [Research->Plan->Impl->Test<->Debug] -> Commit |
-| Refactor | Validator -> Scout -> Decomposer -> [Research->Refactor->Review->Test] -> Commit |
-| Hotfix | Validator -> [Impl->Test<->Debug] -> Commit |
-
-Minimum always: Validator + Test + Commit. Hotfix skips Scout/Decomposer -- speed is critical.
-
-### Adaptive Entry
-
-When you provide a ready-made specification (file path, pasted content, or existing spec in `docs/`), the Brainstormer (Stage 0) is skipped. The Validator transforms the input into the standard format and validates it directly.
-
-### Design QA Cycle
-
-For UI modules with Designer output, Design QA runs after the Test/Debug cycle:
-
-```
-Design QA fails -> Implementer fixes -> Tester -> (Debug if needed) -> Design QA re-runs
-(max 2 cycles, then escalate to user)
-```
+| Feature | All 10 stages |
+| Feature + Design | All stages including Designer |
+| Bugfix | Analyze → Research → Plan → [Impl→Test⇄Debug] → Commit |
+| Refactor | Analyze → Research → Plan → Refactor → Review → Test → Commit |
+| Hotfix | Analyze → [Impl→Test⇄Debug] → Commit |
 
 ## Repository Structure
 
 ```
 ai-arsenal/
 ├── skills/
-│   ├── task/                              # SDLC pipeline orchestrator
-│   │   ├── SKILL.md                       # Orchestrator -- manages pipeline flow
-│   │   └── agents/                        # 15 specialized agents
-│   │       ├── analyst.md                 # Validator (Stage 1, opus)
-│   │       ├── brainstormer.md            # Spec brainstorm (Stage 0, opus)
-│   │       ├── committer.md               # Commit preparation (Stage 12, haiku)
-│   │       ├── debugger.md                # Failure diagnosis (Stage 8, sonnet)
-│   │       ├── decomposer.md              # Module decomposition (Stage 3, opus)
-│   │       ├── design-qa.md               # Design verification (Stage 8.5, sonnet)
-│   │       ├── designer.md                # Design extraction (Stage 5.5, opus)
-│   │       ├── documenter.md              # Documentation updates (Stage 11, haiku)
-│   │       ├── implementer.md             # Code writing (Stage 6, sonnet)
-│   │       ├── planner.md                 # Plan creation (Stage 5, opus)
-│   │       ├── refactorer.md              # Minor improvements (Stage 10, haiku)
-│   │       ├── researcher.md              # Deep research (Stage 4, sonnet)
-│   │       ├── reviewer.md                # Code review (Stage 9, sonnet)
-│   │       ├── scout.md                   # Light research (Stage 2, sonnet)
-│   │       ├── tester.md                  # Test writing & running (Stage 7, sonnet)
-│   │       └── refs/                      # On-demand references (Level 3)
-│   │           ├── architecture-checklist.md
-│   │           ├── brainstorm-patterns.md
-│   │           ├── commit-conventions.md
-│   │           ├── commit-template.md
-│   │           ├── debug-examples.md
-│   │           ├── design-tokens-example.md
-│   │           ├── doc-formats.md
-│   │           ├── performance-checklist.md
-│   │           └── security-checklist.md
-│   ├── lander/                            # Landing page brainstorm orchestrator
-│   │   ├── SKILL.md
-│   │   └── agents/
-│   └── redesign/                          # Pixel-perfect UI redesign skill
-│       ├── SKILL.md
-│       └── agents/
-├── docs/                                  # Conventions, guidelines
-├── files/                                 # Supporting files
-└── specs/                                 # Feature specifications
+│   └── task/                          # SDLC pipeline orchestrator
+│       ├── SKILL.md                   # Orchestrator — manages pipeline flow
+│       └── agents/                    # 10 specialized agents + Designer
+│           ├── analyst.md             # Task analysis (opus)
+│           ├── researcher.md          # Codebase investigation (sonnet)
+│           ├── planner.md             # Plan decomposition (opus)
+│           ├── designer.md            # Design extraction (sonnet)
+│           ├── implementer.md         # Code writing (sonnet)
+│           ├── tester.md              # Test writing & running (sonnet)
+│           ├── debugger.md            # Failure diagnosis (sonnet)
+│           ├── reviewer.md            # Code review (sonnet)
+│           ├── refactorer.md          # Minor improvements (haiku)
+│           ├── documenter.md          # Documentation updates (haiku)
+│           ├── committer.md           # Commit preparation (haiku)
+│           └── refs/                  # On-demand references (Level 3)
+│               ├── security-checklist.md
+│               ├── performance-checklist.md
+│               ├── architecture-checklist.md
+│               ├── debug-examples.md
+│               ├── design-tokens-example.md
+│               ├── doc-formats.md
+│               └── commit-template.md
+├── prompts/                           # System prompts & prompt templates
+├── workflows/                         # Multi-step automation scenarios
+├── templates/                         # File generation templates
+├── evaluations/                       # Test cases & quality benchmarks
+├── configs/                           # MCP servers, model configs
+├── examples/                          # Usage examples
+└── docs/                              # Conventions, guidelines
 ```
 
 ## Setup
@@ -226,7 +223,7 @@ ln -s /path/to/ai-arsenal/skills/task ~/.claude/skills/task
 
 ### Step 2: Install Plugins
 
-These plugins are optional but recommended -- the pipeline uses them when available and falls back gracefully when not.
+These plugins are optional but recommended — the pipeline uses them when available and falls back gracefully when not.
 
 ```bash
 # Open Claude Code in your project
@@ -249,7 +246,7 @@ claude
 ### Step 3: Connect MCP Servers
 
 ```bash
-# context7 -- live library documentation lookup (used by Researcher)
+# context7 — live library documentation lookup (used by Researcher)
 # Add to your .mcp.json or configure through Claude Code settings:
 {
   "mcpServers": {
@@ -277,7 +274,7 @@ claude
 
 # Quick test
 > Implement a health check endpoint that returns { status: "ok", timestamp: ... }
-# Should trigger the pipeline: Brainstormer -> Validator -> Scout -> ...
+# Should trigger the pipeline: Analyst → Researcher → ...
 ```
 
 ### Step 5 (Optional): Enable Agent Teams
@@ -296,7 +293,7 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 }
 ```
 
-Without this, the pipeline falls back to sequential subagents -- everything works, just not in parallel.
+Without this, the pipeline falls back to sequential subagents — everything works, just not in parallel.
 
 ## Usage
 
@@ -311,32 +308,24 @@ Just describe what you need:
 > Hotfix: API returns 500 on empty cart checkout
 ```
 
-The Brainstormer will help you flesh out the spec interactively, then the Validator classifies it and selects the pipeline.
-
-If you already have a specification ready, pass it directly -- the Brainstormer step is skipped automatically:
-
-```
-> Implement the feature described in docs/specs/auth-feature.md
-```
+The Analyst will classify your request, determine the pipeline, and present an analysis for approval.
 
 ### During the Pipeline
 
 The orchestrator shows progress at the top of every response:
 
 ```
-[ok Brainstorm] [ok Validate] [ok Scout] [>> Decompose] [Research 1/3] [Plan 1/3] [Impl 1/3] [Test] [Debug] [Review] [Refactor] [Docs] [Commit]
+[✅ Analyze] → [✅ Research] → [▶ Plan] → [ Design] → [ Implement] → [ Test] → [ Debug] → [ Review] → [ Refactor] → [ Document] → [ Commit]
 ```
 
-Icons: `ok` done, `>>` active, `--` skipped, `<>` re-run, `!!` failed. Multi-module stages show progress as `[>> Impl 2/3]`.
-
 At approval gates, review the output and:
-- **Approve** -- pipeline continues
-- **Adjust** -- modify the output, re-present
-- **Add context** -- incorporate new information
+- **Approve** → pipeline continues
+- **Adjust** → modify the output, re-present
+- **Add context** → incorporate new information
 
 ### After Completion
 
-The Committer produces conventional commits per module:
+The Committer provides ready-to-paste git commands:
 
 ```bash
 git add src/auth/jwt.ts src/auth/middleware.ts src/models/user.ts
@@ -353,14 +342,10 @@ rm -rf .task/
 
 ## Design Decisions
 
-**Why file-based communication?** Each agent runs in its own context window. Files in `.task/` act as shared memory -- agents write structured outputs and downstream agents read only what they need. This prevents context window exhaustion on large tasks.
+**Why file-based communication?** Each agent runs in its own context window. Files in `.task/` act as shared memory — agents write structured outputs and downstream agents read only what they need. This prevents context window exhaustion on large tasks.
 
-**Why progressive disclosure?** Agent prompts use 3 levels: metadata (~100 tokens, always loaded), instructions (loaded when agent activates), and references (loaded on-demand from `refs/`). This keeps the orchestrator lightweight -- it sees all agents at a glance without loading their full instructions.
+**Why progressive disclosure?** Agent prompts use 3 levels: metadata (~100 tokens, always loaded), instructions (loaded when agent activates), and references (loaded on-demand from `refs/`). This keeps the orchestrator lightweight — it sees all agents at a glance without loading their full instructions.
 
 **Why plugin delegation?** Instead of embedding 60+ line security checklists in the Reviewer, we delegate to `security-scanning` which is purpose-built and community-maintained. The pipeline keeps a fallback for when plugins aren't installed.
 
-**Why adaptive pipeline?** A simple hotfix doesn't need documentation and review stages. The Validator determines which stages run based on task type and scope, saving time and tokens.
-
-**Why per-module execution?** The Decomposer splits the task into independent modules. Each module goes through its own Research -> Plan -> Implement -> Test -> Debug loop. This keeps each agent's context focused on one module at a time, and independent modules can run in parallel when Agent Teams is available.
-
-**Why Brainstormer + Adaptive Entry?** Most tasks start vague. The Brainstormer helps the user flesh out a proper spec interactively. But when a ready-made spec exists (from a planning tool, a ticket, or a prior session), skipping the brainstorm saves time without losing quality.
+**Why adaptive pipeline?** A simple hotfix doesn't need documentation and review stages. The Analyst determines which stages run based on task type and scope, saving time and tokens.

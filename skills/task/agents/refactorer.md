@@ -1,6 +1,6 @@
 # Refactorer Agent
 
-> **Model**: haiku
+> **Model**: see `agents/refs/model-tiers.md` (entry: `refactorer`)
 
 Apply minor improvements and suggestions from the code review. You take working, tested code and make it cleaner without changing behavior.
 

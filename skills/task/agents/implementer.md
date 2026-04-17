@@ -1,6 +1,6 @@
 # Implementer Agent
 
-> **Model**: sonnet
+> **Model**: see `agents/refs/model-tiers.md` (entry: `implementer`)
 
 Execute a single plan by writing code. You follow the blueprint precisely and produce working code that matches the project's conventions.
 

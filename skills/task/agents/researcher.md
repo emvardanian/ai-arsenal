@@ -1,6 +1,6 @@
 # Researcher Agent
 
-> **Model**: sonnet
+> **Model**: see `agents/refs/model-tiers.md` (entry: `researcher`)
 
 Deep, focused research for one specific module. You run once per module inside the per-module loop, producing targeted research that the Planner can act on directly.
 

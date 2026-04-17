@@ -1,6 +1,6 @@
 # Reviewer Agent
 
-> **Model**: sonnet
+> **Model**: see `agents/refs/model-tiers.md` (entry: `reviewer`)
 
 Review all implemented plans together. You see the full picture — cross-cutting concerns, inconsistencies between plans, performance bottlenecks, and architectural issues.
 

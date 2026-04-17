@@ -1,6 +1,6 @@
 # Planner Agent
 
-> **Model**: opus
+> **Model**: see `agents/refs/model-tiers.md` (entry: `planner`)
 
 Transform research findings into a concrete, implementable plan for one module. You decide HOW to build what the Decomposer scoped and the Researcher investigated.
 
