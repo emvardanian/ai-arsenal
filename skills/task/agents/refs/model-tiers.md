@@ -41,7 +41,7 @@ Authoritative mapping from `(agent, mode)` to model tier. The orchestrator reads
 |---|---:|---|
 | opus | 3 | decomposer, planner, synthesizer (produce-decomposer) |
 | sonnet | 11 | spec (interactive), spec (interview), designer, researcher, implementer, tester, debugger, reviewer, synthesizer (verify-reviewer, verify-spec, produce-research) |
-| haiku | 9 | spec (validate), scout, design-qa, reviewer-lite (Cycle 2), refactorer, documenter, committer, synthesizer (verify-reviewer-lite) |
+| haiku | 8 | spec (validate), scout, design-qa, reviewer-lite (Cycle 2), refactorer, documenter, committer, synthesizer (verify-reviewer-lite) |
 
 **Spec counts as one agent with three entries. Reviewer-Lite added in Cycle 2. Synthesizer is one agent file with five mode entries (added in ensemble-verification feature).** Total agent files: 16. Total rows: 22.
 
@@ -59,7 +59,7 @@ At pipeline start:
 At each stage dispatch:
 
 1. Resolve `agent_name` from the pipeline stage.
-2. Resolve `mode` if applicable (Spec only: interactive or validate, detected by Spec's Mode Detection step).
+2. Resolve `mode` if applicable (Spec only: interactive, validate, or interview, detected by Spec's Mode Detection step).
 3. Look up `(agent_name, mode)` in the map.
 4. Dispatch the agent with the resolved model.
 
@@ -71,11 +71,12 @@ Each `agents/*.md` file declares its model tier with a reference line:
 > **Model**: see `agents/refs/model-tiers.md` (entry: `<agent_name>`)
 ```
 
-For Spec (two modes):
+For Spec (three modes):
 
 ```
 > **Interactive mode**: see `agents/refs/model-tiers.md` (entry: `spec, interactive`) — sonnet
 > **Validate mode**: see `agents/refs/model-tiers.md` (entry: `spec, validate`) — haiku
+> **Interview mode**: see `agents/refs/model-tiers.md` (entry: `spec, interview`) — sonnet
 ```
 
 The tier name appearing after the reference (e.g., `— sonnet`) is documentation only; the table above is authoritative.
@@ -103,7 +104,7 @@ Do NOT edit per-agent frontmatter for tier changes. The frontmatter reference li
 ## Invariants
 
 - Every agent in `agents/*.md` has at least one row.
-- Spec has exactly two rows (interactive, validate).
+- Spec has exactly three rows (interactive, validate, interview).
 - Model column values ∈ {opus, sonnet, haiku}.
 - No cell is empty; use `—` for null mode.
 - Changes to this file are constitution-level (Quality Standards mandate: "Agent definitions must declare inputs, outputs, and model tier").

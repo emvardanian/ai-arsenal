@@ -11,7 +11,7 @@ Using the Scout's terrain map and the Analyst's acceptance criteria, decompose t
 ## Inputs
 
 - **`.task/02-scout.md`** -- full
-- **`.task/01-analysis.md`** -- Brief section only
+- **`.task/00-spec.md`** -- Brief section only
 
 ## Process
 
