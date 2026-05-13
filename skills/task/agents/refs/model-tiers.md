@@ -29,16 +29,21 @@ Authoritative mapping from `(agent, mode)` to model tier. The orchestrator reads
 | refactorer | — | haiku | Mechanical rename/extract/reorder within single files |
 | documenter | — | haiku | README/CHANGELOG/docstring updates following existing conventions |
 | committer | — | haiku | Conventional commit formatting + staging instructions |
+| synthesizer | verify-reviewer | sonnet | Union of findings across 3 reviewer raws; paraphrase-dedup + severity sort |
+| synthesizer | verify-reviewer-lite | haiku | Union of mechanical scan findings; pure dedup, no semantic work |
+| synthesizer | verify-spec | sonnet | Union of spec-validation findings; mirror checks across artefacts |
+| synthesizer | produce-research | sonnet | Semantic merge of 3 research docs into one canonical; file/dep deduplication |
+| synthesizer | produce-decomposer | opus | Semantic merge of 3 module decompositions; reconciling module boundaries |
 
 ## Tier distribution
 
 | Tier | Count | Agents |
 |---|---:|---|
-| opus | 2 | decomposer, planner |
-| sonnet | 8 | spec (interactive), spec (interview), designer, researcher, implementer, tester, debugger, reviewer |
-| haiku | 8 | spec (validate), scout, design-qa, reviewer-lite (Cycle 2), refactorer, documenter, committer |
+| opus | 3 | decomposer, planner, synthesizer (produce-decomposer) |
+| sonnet | 11 | spec (interactive), spec (interview), designer, researcher, implementer, tester, debugger, reviewer, synthesizer (verify-reviewer, verify-spec, produce-research) |
+| haiku | 9 | spec (validate), scout, design-qa, reviewer-lite (Cycle 2), refactorer, documenter, committer, synthesizer (verify-reviewer-lite) |
 
-**Spec counts as one agent with three entries. Reviewer-Lite added in Cycle 2.** Total agent files: 15. Total rows: 17.
+**Spec counts as one agent with three entries. Reviewer-Lite added in Cycle 2. Synthesizer is one agent file with five mode entries (added in ensemble-verification feature).** Total agent files: 16. Total rows: 22.
 
 ## Reader contract
 

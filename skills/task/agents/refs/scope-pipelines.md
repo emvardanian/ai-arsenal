@@ -85,6 +85,27 @@ Notes: `designer?` and `design-qa?` trigger only for modules flagged `ui: true` 
 - Task-type differentiation is preserved at every scope (FR-006).
 - Changing this table changes pipeline selection. Do not edit without also updating `data-model.md` and running verification per `quickstart.md`.
 
+## Ensemble activation per scope
+
+Independent of which stages run, this matrix declares which stages run as **ensemble** (3 parallel + synthesizer) versus single-pass at each scope. See `refs/ensemble.md` for ensemble mechanics.
+
+| Scope | Reviewer | Reviewer-Lite | Researcher | Spec validation | Decomposer |
+|-------|----------|---------------|------------|-----------------|------------|
+| XS    | ensemble | —             | —          | single          | —          |
+| S     | ensemble | —             | —          | single          | —          |
+| M     | ensemble | single        | ensemble   | single          | single     |
+| L     | ensemble | ensemble      | ensemble   | ensemble        | ensemble   |
+| XL    | ensemble | ensemble      | ensemble   | ensemble        | ensemble   |
+
+Legend: `ensemble` — 3 parallel + synthesizer; `single` — single-pass; `—` — stage does not run at this scope per the pipeline table above (so the ensemble question doesn't apply).
+
+Preamble overrides (precedence: preamble > slash-command > project-prefs > global-prefs > this matrix):
+- `ensemble: off` → no stage ensembled.
+- `ensemble: full` → every stage in the row marked `ensemble` runs ensembled (effectively no-op vs default for L/XL; expands eligibility for M).
+- `ensemble: reviewer-only` → only Reviewer ensembled regardless of scope.
+
+The orchestrator consults this matrix at each stage dispatch. See `refs/ensemble.md` for the `should_ensemble(stage, scope, tier)` algorithm and `agents/synthesizer.md` for the merge logic.
+
 ## Scope upgrade mid-pipeline
 
 If Scout (present at M and above) reports an affected-file count exceeding the current scope threshold by 2x or more:
