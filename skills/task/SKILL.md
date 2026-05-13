@@ -90,6 +90,7 @@ Loaded on demand, not at skill activation:
 | `refs/model-tiers.md` | At dispatch time (agent → model) |
 | `refs/criticality-signals.md` | At tier selection (keyword/flag detection) |
 | `refs/spec-dialogue-patterns.md` | Only by Spec agent in interactive/interview mode |
+| `refs/ensemble.md` | At startup (alongside Agent Reference); consulted at every stage dispatch (activation matrix, file naming, divergence handling, front-matter schema) |
 
 Plus existing checklists (`architecture-checklist.md`, `performance-checklist.md`, `security-checklist.md`, `debug-examples.md`, `design-tokens-example.md`, `doc-formats.md`, `commit-conventions.md`, `commit-template.md`) loaded by their owning agents on demand.
 
@@ -128,7 +129,18 @@ Precedence per field: preamble > slash command > project > global > Cycle-2 defa
 6. **Classify scope** per `refs/pipelines.md`. Write to front-matter. Effective order: preamble > slash > project prefs > global prefs > classifier.
 7. **Select tier** per `refs/approvals.md`. Default from scope; apply user/slash/prefs override and criticality gate prompt. Record `tier`, `tier_source`, `tier_override`, `criticality_flag`.
 8. **Resolve pipeline**: look up `(scope, task_type)` in `refs/scope-pipelines.md`. Merge `skip_stages` from prefs into `skipped_stages`. Record with reasons.
-9. **Dispatch stages** in order. At each stage: resolve model + approval gate + delegation + batch eligibility (for Planner/Implementer/Reviewer-Lite at strict, see `refs/batch-approval.md`). Read `agents/<stage>.md`, execute, update pipeline-summary body. Wait for approval (individual or batch) as resolved.
+9. **Dispatch stages** in order. At each stage:
+   1. Resolve model + approval gate + delegation + batch eligibility (for Planner/Implementer/Reviewer-Lite at strict, see `refs/batch-approval.md`).
+   2. **Check ensemble activation** via `should_ensemble(stage, scope, tier)` per `refs/ensemble.md`.
+      - **If ensemble is active** for this stage:
+        a. Spawn 3 parallel instances of `agents/<stage>.md` in a single `Agent` tool call (multiple invocations in one message). All three receive identical prompts. Each writes its own raw artefact at `.task/<stage>-<N>-{a,b,c}.md`.
+        b. Wait for all three (with timeout handling per `refs/ensemble.md`).
+        c. Dispatch `agents/synthesizer.md` with `--mode=<verify|produce>`, `--target-stage=<stage>`, `--raw-paths=<3 paths>`, `--canonical-path=.task/<stage>-<N>.md`. Model resolved via `refs/model-tiers.md` lookup `(synthesizer, <mode>-<stage>)`.
+        d. If synthesizer returns `divergence-error` (produce mode only): pause, surface raw outputs side by side, await user resolution.
+        e. Gate fires on the canonical (no-suffix) file. Approval prompt includes the synthesizer-produced divergence summary block.
+        f. Record `ensemble` block in pipeline-summary front-matter per `refs/ensemble.md` schema (active, active_stages, scope_basis, override_source, per_stage with instance counts, models, statuses).
+      - **If ensemble is inactive**: existing single-pass dispatch. Read `agents/<stage>.md`, execute, update pipeline-summary body. Wait for approval (individual or batch) as resolved.
+   3. Update pipeline-summary body with results.
 10. **Per-module loops** at M+: inner stages repeat per Decomposer module. `approval_mode` (per stage type) governs batch vs per-module gating in strict tier.
 11. **Committer** (always last, always gated).
 
