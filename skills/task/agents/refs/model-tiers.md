@@ -46,6 +46,8 @@ Authoritative mapping from `(agent, mode)` to model tier. The orchestrator reads
 
 **Spec counts as one agent with three entries. Reviewer-Lite added in Cycle 2. Synthesizer is one agent file with five mode entries (added in ensemble-verification feature). Archivist added in Cycle 4.** Total agent files: 17. Total rows: 23.
 
+**Count note**: The README states "16 specialized agents" — this counts numbered pipeline stages only (1–13, including Archivist, excluding Synthesizer). Synthesizer is infrastructure (spawned internally by the orchestrator for ensemble runs, never a numbered pipeline stage), so it is counted here in agent files but not in the README stage count. Both counts are correct for their respective purposes.
+
 ## Reader contract
 
 ### Orchestrator

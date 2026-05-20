@@ -28,13 +28,13 @@ If it exists, extract keywords from `.task/00-spec.md` (feature name words, affe
 grep -i "<keywords>" specs/INDEX.md 2>/dev/null
 ```
 
-For each matching spec row, read `archived_sha` and `affected_paths` from `specs/<slug>/spec.md` frontmatter, then check what has changed since that SHA:
+For each matching spec row, read `archived_sha` and `affected_paths` from `specs/archive/<slug>/spec.md` frontmatter, then check what has changed since that SHA:
 
 ```bash
 git diff "<archived_sha>..HEAD" --name-only 2>/dev/null
 ```
 
-Cross-reference the changed files against `affected_paths`. Score staleness per `agents/refs/spec-library.md` (fresh / stale / critical). Update the `staleness` field in the spec frontmatter and in `specs/INDEX.md` when the tier changes from `fresh`.
+Cross-reference the changed files against `affected_paths`. Score staleness per `agents/refs/spec-library.md` (the classification heuristic distinguishes minor patterns from core patterns — load the ref for the full algorithm). Update the `staleness` field in the spec frontmatter and in `specs/INDEX.md` when the tier changes from `fresh`.
 
 Report results in a `## Spec Library Scan` block at the top of `02-scout.md`:
 
@@ -45,8 +45,9 @@ Report results in a `## Spec Library Scan` block at the top of `02-scout.md`:
 | 2026-04-17-fix-stale-refs | stale | skills/task/agents/scout.md |
 | 2026-03-22-lander-skill | fresh | — |
 
-Recommendation: specs/2026-04-17-fix-stale-refs/spec.md is stale.
-Pass @specs/2026-04-17-fix-stale-refs/spec.md to the Spec agent in interview mode to refresh it.
+Recommendation: specs/archive/2026-04-17-fix-stale-refs/spec.md is stale (minor changes only).
+To refresh: use `interview @specs/archive/2026-04-17-fix-stale-refs/spec.md` in the next invocation.
+Note: the `interview` keyword is required — @<path> alone triggers validate mode (rule 3), not interview mode.
 ```
 
 If no matching specs are found, write: `## Spec Library Scan — no related specs found.`

@@ -129,7 +129,7 @@ Users override tier at invocation with `tier: <strict\|standard\|express>` in th
 | 10 | **Refactorer** | haiku | Apply minor improvements from review, re-run tests | ✅ |
 | 11 | **Documenter** | haiku | Update README, CHANGELOG, API docs, inline comments | ✅ |
 | 12 | **Committer** | haiku | Conventional commits. Delegates PR description to `git-pr-workflows` | ✅ (always) |
-| 13 | **Archivist** | haiku | Archive spec to `specs/<slug>/`, update `specs/INDEX.md`. Runs automatically after Committer — no gate. | — (auto) |
+| 13 | **Archivist** | haiku | Archive spec to `specs/archive/<slug>/`, update `specs/INDEX.md`. Runs automatically after Committer — no gate. S+ only. | — (auto) |
 <!-- AUTOSYNC:END -->
 
 Model tiers are authoritative in `skills/task/agents/refs/model-tiers.md` — single source of truth, dispatch-time lookup.

@@ -42,7 +42,7 @@ Model column references `agents/refs/model-tiers.md` (authoritative). Summary ti
 | 10 | Refactorer | `agents/refactorer.md` | haiku | `09-review.md` (minor + suggestions) | `10-refactor.md` + code |
 | 11 | Documenter | `agents/documenter.md` | haiku | `pipeline-summary.md` + doc files | `11-docs.md` + docs |
 | 12 | Committer | `agents/committer.md` | haiku | `pipeline-summary.md`, `00-spec.md` (brief), `03-decomposition.md` (brief), `06-impl-*.md` (briefs) | `12-commit.md` |
-| 13 | Archivist | `agents/archivist.md` | haiku | `00-spec.md`, `pipeline-summary.md`, `06-impl-*.md` (briefs) | `specs/<slug>/spec.md`, `specs/INDEX.md`, `13-archive.md` |
+| 13 | Archivist | `agents/archivist.md` | haiku | `00-spec.md`, `pipeline-summary.md`, `06-impl-*.md` (briefs) | `specs/archive/<slug>/spec.md`, `specs/INDEX.md`, `13-archive.md` |
 
 **Model strategy**: opus — complex reasoning (decomposition, planning). Sonnet — execution (research, code, tests, debug, review). Haiku — mechanical (scout, design-qa, review-lite, refactor, docs, commits). Authoritative per-agent assignments in `agents/refs/model-tiers.md`.
 
@@ -145,7 +145,8 @@ Precedence per field: preamble > slash command > project > global > Cycle-2 defa
       - **If ensemble is inactive**: existing single-pass dispatch. Read `agents/<stage>.md`, execute, update pipeline-summary body. Wait for approval (individual or batch) as resolved.
    3. Update pipeline-summary body with results.
 10. **Per-module loops** at M+: inner stages repeat per Decomposer module. `approval_mode` (per stage type) governs batch vs per-module gating in strict tier.
-11. **Committer** (last gated stage). After Committer completes: if `.task/00-spec.md` exists, dispatch **Archivist** (`agents/archivist.md`) automatically — no approval gate. Archivist persists the spec to `specs/<slug>/` and updates `specs/INDEX.md`. Skip Archivist if `archive_spec: false` in prefs or if XS pipeline (no Spec stage).
+11. **Committer** (last gated stage).
+12. **Archivist** — automatic, no approval gate. Dispatch `agents/archivist.md` immediately after Committer completes. Persists spec to `specs/archive/<slug>/` and updates `specs/INDEX.md`. Skip if `.task/00-spec.md` does not exist (XS pipelines), `archive_spec: false` in prefs, or body of archived spec is identical to current spec body.
 
 If request is ambiguous — ask. Don't trigger full pipeline for simple questions.
 
