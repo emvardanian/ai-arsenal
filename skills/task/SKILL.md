@@ -42,6 +42,7 @@ Model column references `agents/refs/model-tiers.md` (authoritative). Summary ti
 | 10 | Refactorer | `agents/refactorer.md` | haiku | `09-review.md` (minor + suggestions) | `10-refactor.md` + code |
 | 11 | Documenter | `agents/documenter.md` | haiku | `pipeline-summary.md` + doc files | `11-docs.md` + docs |
 | 12 | Committer | `agents/committer.md` | haiku | `pipeline-summary.md`, `00-spec.md` (brief), `03-decomposition.md` (brief), `06-impl-*.md` (briefs) | `12-commit.md` |
+| 13 | Archivist | `agents/archivist.md` | haiku | `00-spec.md`, `pipeline-summary.md`, `06-impl-*.md` (briefs) | `specs/archive/<slug>/spec.md`, `specs/INDEX.md`, `13-archive.md` |
 
 **Model strategy**: opus — complex reasoning (decomposition, planning). Sonnet — execution (research, code, tests, debug, review). Haiku — mechanical (scout, design-qa, review-lite, refactor, docs, commits). Authoritative per-agent assignments in `agents/refs/model-tiers.md`.
 
@@ -69,6 +70,7 @@ Model column references `agents/refs/model-tiers.md` (authoritative). Summary ti
   10-refactor.md
   11-docs.md
   12-commit.md
+  13-archive.md             (only if Spec ran; written by Archivist)
 ```
 
 **Note**: `01-analysis.md` is no longer produced (pre-redesign artifact). On pre-Cycle-1 resume, downstream agents may read it as fallback — see `refs/resume.md`. Cycle-1 workspaces never have `09.5-review-lite-*.md` files.
@@ -91,6 +93,7 @@ Loaded on demand, not at skill activation:
 | `refs/criticality-signals.md` | At tier selection (keyword/flag detection) |
 | `refs/spec-dialogue-patterns.md` | Only by Spec agent in interactive/interview mode |
 | `refs/ensemble.md` | At startup (alongside Agent Reference); consulted at every stage dispatch (activation matrix, file naming, divergence handling, front-matter schema) |
+| `refs/spec-library.md` | When Archivist runs; when Scout performs a spec library staleness scan |
 
 Plus existing checklists (`architecture-checklist.md`, `performance-checklist.md`, `security-checklist.md`, `debug-examples.md`, `design-tokens-example.md`, `doc-formats.md`, `commit-conventions.md`, `commit-template.md`) loaded by their owning agents on demand.
 
@@ -142,7 +145,8 @@ Precedence per field: preamble > slash command > project > global > Cycle-2 defa
       - **If ensemble is inactive**: existing single-pass dispatch. Read `agents/<stage>.md`, execute, update pipeline-summary body. Wait for approval (individual or batch) as resolved.
    3. Update pipeline-summary body with results.
 10. **Per-module loops** at M+: inner stages repeat per Decomposer module. `approval_mode` (per stage type) governs batch vs per-module gating in strict tier.
-11. **Committer** (always last, always gated).
+11. **Committer** (last gated stage).
+12. **Archivist** — automatic, no approval gate. Dispatch `agents/archivist.md` immediately after Committer completes. Persists spec to `specs/archive/<slug>/` and updates `specs/INDEX.md`. Skip if `.task/00-spec.md` does not exist (XS pipelines), `archive_spec: false` in prefs, or body of archived spec is identical to current spec body.
 
 If request is ambiguous — ask. Don't trigger full pipeline for simple questions.
 
@@ -151,5 +155,7 @@ If request is ambiguous — ask. Don't trigger full pipeline for simple question
 See `refs/resume.md` for full detection logic. Safe default on resume: `tier: strict`, `delegation_mode: fallback`, `review_lite_enabled: false` (no retroactive additions to in-flight runs).
 
 ## Cleaning Up
+
+Archivist runs automatically after Committer — spec is saved to `specs/` before the workspace is removed.
 
 After user commits: `rm -rf .task/` — don't clean up automatically.

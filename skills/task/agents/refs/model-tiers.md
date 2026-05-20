@@ -29,6 +29,7 @@ Authoritative mapping from `(agent, mode)` to model tier. The orchestrator reads
 | refactorer | — | haiku | Mechanical rename/extract/reorder within single files |
 | documenter | — | haiku | README/CHANGELOG/docstring updates following existing conventions |
 | committer | — | haiku | Conventional commit formatting + staging instructions |
+| archivist | — | haiku | File copies, frontmatter merge, INDEX row append — fully mechanical |
 | synthesizer | verify-reviewer | sonnet | Union of findings across 3 reviewer raws; paraphrase-dedup + severity sort |
 | synthesizer | verify-reviewer-lite | haiku | Union of mechanical scan findings; pure dedup, no semantic work |
 | synthesizer | verify-spec | sonnet | Union of spec-validation findings; mirror checks across artefacts |
@@ -41,9 +42,11 @@ Authoritative mapping from `(agent, mode)` to model tier. The orchestrator reads
 |---|---:|---|
 | opus | 3 | decomposer, planner, synthesizer (produce-decomposer) |
 | sonnet | 11 | spec (interactive), spec (interview), designer, researcher, implementer, tester, debugger, reviewer, synthesizer (verify-reviewer, verify-spec, produce-research) |
-| haiku | 8 | spec (validate), scout, design-qa, reviewer-lite (Cycle 2), refactorer, documenter, committer, synthesizer (verify-reviewer-lite) |
+| haiku | 9 | spec (validate), scout, design-qa, reviewer-lite (Cycle 2), refactorer, documenter, committer, archivist, synthesizer (verify-reviewer-lite) |
 
-**Spec counts as one agent with three entries. Reviewer-Lite added in Cycle 2. Synthesizer is one agent file with five mode entries (added in ensemble-verification feature).** Total agent files: 16. Total rows: 22.
+**Spec counts as one agent with three entries. Reviewer-Lite added in Cycle 2. Synthesizer is one agent file with five mode entries (added in ensemble-verification feature). Archivist added in Cycle 4.** Total agent files: 17. Total rows: 23.
+
+**Count note**: The README states "16 specialized agents" — this counts numbered pipeline stages only (1–13, including Archivist, excluding Synthesizer). Synthesizer is infrastructure (spawned internally by the orchestrator for ensemble runs, never a numbered pipeline stage), so it is counted here in agent files but not in the README stage count. Both counts are correct for their respective purposes.
 
 ## Reader contract
 
@@ -103,7 +106,7 @@ Do NOT edit per-agent frontmatter for tier changes. The frontmatter reference li
 
 ## Invariants
 
-- Every agent in `agents/*.md` has at least one row.
+- Every agent in `agents/*.md` has at least one row. Current agent files: 17 (includes archivist, added Cycle 4).
 - Spec has exactly three rows (interactive, validate, interview).
 - Model column values ∈ {opus, sonnet, haiku}.
 - No cell is empty; use `—` for null mode.
