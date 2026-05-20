@@ -1,7 +1,7 @@
 # AI Arsenal
 
 <!-- AUTOSYNC:BEGIN:agent-count -->
-The centerpiece is the **Task** skill — a scope-adaptive orchestrator that runs up to 15 specialized agents through a complete development lifecycle, with per-module Reviewer-Lite, optional delegation to the `superpowers` plugin, and daily-UX slash commands.
+The centerpiece is the **Task** skill — a scope-adaptive orchestrator that runs up to 16 specialized agents through a complete development lifecycle, with per-module Reviewer-Lite, optional delegation to the `superpowers` plugin, and daily-UX slash commands.
 <!-- AUTOSYNC:END -->
 
 A modular toolkit that supercharges Claude Code with reusable skills, sub-agents, and workflows for software development.
@@ -71,7 +71,13 @@ User Request
 ┌──────────┐   ┌────────────┐   ┌───────────┐   ┌───────────┐
 │ 9.Review │──▶│10.Refactor │──▶│11.Document│──▶│12.Commit  │
 │          │   │  [aprv*]   │   │  [aprv*]  │   │  [aprv]   │
-└──────────┘   └────────────┘   └───────────┘   └───────────┘
+└──────────┘   └────────────┘   └───────────┘   └─────┬─────┘
+                                                        │
+                                                        ▼
+                                                 ┌─────────────┐
+                                                 │ 13.Archive  │
+                                                 │   [auto]    │
+                                                 └─────────────┘
 ```
 <!-- AUTOSYNC:END -->
 
@@ -85,10 +91,10 @@ Pipeline selection is scope-driven. The skill skips heavyweight stages for small
 | Scope | Signals | Pipeline family | Typical approvals |
 |---|---|---|---|
 | **XS** | 1 file, 1 module | Impl → Test → Commit | 1 (express) |
-| **S** | 2-5 files, 1 module | Spec → Plan → Impl → Test → Commit | 1 (express) |
-| **M** | 5-15 files, 2-3 modules | Spec → Scout → Decompose → per-module loop → Commit | 3 (standard) |
-| **L** | 15-40 files, 3-5 modules | M + Reviewer + Refactorer + Documenter | ~11-13 (strict) |
-| **XL** | 40+ files OR UI | L + Designer + Design-QA | pre-redesign behavior |
+| **S** | 2-5 files, 1 module | Spec → Plan → Impl → Test → Commit → Archive | 1 (express) |
+| **M** | 5-15 files, 2-3 modules | Spec → Scout → Decompose → per-module loop → Commit → Archive | 3 (standard) |
+| **L** | 15-40 files, 3-5 modules | M + Reviewer + Refactorer + Documenter → Archive | ~11-13 (strict) |
+| **XL** | 40+ files OR UI | L + Designer + Design-QA → Archive | pre-redesign behavior |
 <!-- AUTOSYNC:END -->
 
 Full (scope, task_type) matrix in `skills/task/agents/refs/scope-pipelines.md`.
@@ -123,6 +129,7 @@ Users override tier at invocation with `tier: <strict\|standard\|express>` in th
 | 10 | **Refactorer** | haiku | Apply minor improvements from review, re-run tests | ✅ |
 | 11 | **Documenter** | haiku | Update README, CHANGELOG, API docs, inline comments | ✅ |
 | 12 | **Committer** | haiku | Conventional commits. Delegates PR description to `git-pr-workflows` | ✅ (always) |
+| 13 | **Archivist** | haiku | Archive spec to `specs/<slug>/`, update `specs/INDEX.md`. Runs automatically after Committer — no gate. | — (auto) |
 <!-- AUTOSYNC:END -->
 
 Model tiers are authoritative in `skills/task/agents/refs/model-tiers.md` — single source of truth, dispatch-time lookup.

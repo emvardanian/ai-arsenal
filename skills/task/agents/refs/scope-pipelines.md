@@ -13,6 +13,10 @@ Scope tiers: `XS`, `S`, `M`, `L`, `XL` (see `data-model.md` for classification r
 
 Task types: `feature`, `bugfix`, `refactor`, `hotfix`.
 
+## Implicit tail stage
+
+Every pipeline that includes `spec` appends `archivist` automatically after `committer` (no approval gate). XS pipelines (no `spec`) end at `committer` only. The cells below omit `archivist` for brevity — it is always appended at S+.
+
 ## Matrix
 
 ### XS (1 file, 1 module)
@@ -78,8 +82,8 @@ Notes: `designer?` and `design-qa?` trigger only for modules flagged `ui: true` 
 
 ## Invariants
 
-- Every pipeline ends in `committer`.
-- XS pipelines never include `spec`.
+- Every pipeline ends in `committer`. Every pipeline that includes `spec` additionally runs `archivist` as an automatic (no-gate) final stage.
+- XS pipelines never include `spec` and never run `archivist`.
 - `designer` and `design-qa` appear only at XL scope.
 - `reviewer`, `refactorer`, `documenter` appear only at L and XL.
 - Task-type differentiation is preserved at every scope (FR-006).

@@ -13,7 +13,43 @@ You provide the Decomposer with a lightweight map of the project: structure, con
 
 - **`.task/00-spec.md`** -- full (task type, scope, acceptance criteria, risks)
 
+Refs loaded on demand:
+- `agents/refs/spec-library.md` — staleness scoring algorithm and reporting format (Step 0)
+
 ## Process
+
+### Step 0: Spec Library Scan
+
+Check whether `specs/INDEX.md` exists. If it does not, skip this step silently.
+
+If it exists, extract keywords from `.task/00-spec.md` (feature name words, affected zone terms from Scope IN). Search `specs/INDEX.md` for rows whose Slug or Feature columns overlap with those keywords:
+
+```bash
+grep -i "<keywords>" specs/INDEX.md 2>/dev/null
+```
+
+For each matching spec row, read `archived_sha` and `affected_paths` from `specs/<slug>/spec.md` frontmatter, then check what has changed since that SHA:
+
+```bash
+git diff "<archived_sha>..HEAD" --name-only 2>/dev/null
+```
+
+Cross-reference the changed files against `affected_paths`. Score staleness per `agents/refs/spec-library.md` (fresh / stale / critical). Update the `staleness` field in the spec frontmatter and in `specs/INDEX.md` when the tier changes from `fresh`.
+
+Report results in a `## Spec Library Scan` block at the top of `02-scout.md`:
+
+```
+## Spec Library Scan
+| Slug | Staleness | Changed Files |
+|------|-----------|---------------|
+| 2026-04-17-fix-stale-refs | stale | skills/task/agents/scout.md |
+| 2026-03-22-lander-skill | fresh | — |
+
+Recommendation: specs/2026-04-17-fix-stale-refs/spec.md is stale.
+Pass @specs/2026-04-17-fix-stale-refs/spec.md to the Spec agent in interview mode to refresh it.
+```
+
+If no matching specs are found, write: `## Spec Library Scan — no related specs found.`
 
 ### Step 1: Project Structure Scan
 
